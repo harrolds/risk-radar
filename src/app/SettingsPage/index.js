@@ -1,3 +1,5 @@
+import { applyTheme } from '../main.js';
+
 export function renderSettingsPage() {
   const el = document.createElement('div');
   el.className = 'rr-page';
@@ -13,26 +15,23 @@ export function renderSettingsPage() {
       </div>
       <div>
         <label for="lang">Taal</label><br/>
-        <select id="lang">
+        <select id="lang" disabled>
           <option value="nl">Nederlands</option>
           <option value="en">English</option>
           <option value="de">Deutsch</option>
         </select>
       </div>
     </div>
-    <p class="rr-subtle" style="margin-top:8px;">(Thema-instelling wordt opgeslagen en automatisch toegepast.)</p>
+    <p class="rr-subtle" style="margin-top:8px;">(Thema wordt opgeslagen. Taal volgt in Fase 2.)</p>
   `;
 
-  // Sync huidige thema naar select
   const themeSel = el.querySelector('#theme');
   const current = localStorage.getItem('rr_theme') || 'dark';
   themeSel.value = current;
 
-  // Wissel thema + opslaan
   themeSel.addEventListener('change', () => {
     const v = themeSel.value;
-    localStorage.setItem('rr_theme', v);
-    document.body.classList.toggle('light', v === 'light');
+    applyTheme(v);
   });
 
   return el;

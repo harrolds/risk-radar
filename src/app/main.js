@@ -4,9 +4,17 @@ import { Header } from './components/Header.js';
 import { Footer } from './components/Footer.js';
 import { BottomNav } from './components/BottomNav.js';
 
-// === THEMA: toepassen bij app-start ===
-const savedTheme = localStorage.getItem('rr_theme') || 'dark';
-document.body.classList.toggle('light', savedTheme === 'light');
+/** THEMA: set via html[data-theme] for reliable CSS variable switching */
+function applyTheme(theme) {
+  const t = theme === 'light' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('rr_theme', t);
+}
+
+(function bootTheme(){
+  const saved = localStorage.getItem('rr_theme') || 'dark';
+  applyTheme(saved);
+})();
 
 const appRoot = document.getElementById('rr-app');
 
@@ -26,3 +34,6 @@ shell.appendChild(bottomNav);
 appRoot.appendChild(shell);
 
 initRouter({ mount: main });
+
+// export for SettingsPage usage (optional)
+export { applyTheme };
