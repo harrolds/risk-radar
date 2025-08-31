@@ -1,29 +1,15 @@
 <!doctype html>
 <html lang="nl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>RiskRadar – Setup OK</title>
-  <style>
-    html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:#0b1020;color:#e9eefc}
-    .wrap{min-height:100%;display:flex;align-items:center;justify-content:center;padding:24px}
-    .card{max-width:720px;width:100%;background:#121935;border:1px solid #243055;border-radius:16px;padding:28px;box-shadow:0 6px 24px rgba(0,0,0,.35)}
-    h1{margin:0 0 8px;font-size:28px}
-    p{margin:8px 0;line-height:1.6}
-    code{background:#0b1228;border:1px solid #223055;border-radius:6px;padding:2px 6px}
-    .ok{display:inline-block;margin-top:12px;padding:6px 10px;border:1px solid #2a945b;border-radius:8px;background:#123a26}
-    .small{opacity:.8;font-size:13px}
-  </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>RiskRadar MVP</title>
+  <link rel="stylesheet" href="./src/styles/main.css">
 </head>
 <body>
-  <main class="wrap">
-    <section class="card">
-      <h1>RiskRadar – Deploy geslaagd ✅</h1>
-      <p>De Netlify-koppeling werkt. Deze pagina is een tijdelijke placeholder.</p>
-      <p class="small">Volgende stap: MVP bepalen (Fase 1) en daarna de echte app-structuur opzetten.</p>
-      <p class="ok"><strong>Status:</strong> Fase 0 afgerond – repo, branch protection & deploy staan goed.</p>
-      <p class="small">Bestandslocatie: <code>/index.html</code></p>
-    </section>
-  </main>
+  <header id="topbar"></header>
+  <main id="app"></main>
+  <nav id="bottomnav"></nav>
+  <script type="module" src="./src/main.js"></script>
 </body>
 </html>
