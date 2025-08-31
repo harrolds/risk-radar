@@ -6,6 +6,8 @@
   --accent: #4cc9f0;
   --accent-strong: #00b4d8;
   --border: #232a44;
+  --success: #22c55e;
+  --danger: #ef4444;
   --bg-light: #f6f8ff;
   --text-dark: #0f1220;
   --card-light: #ffffff;
@@ -32,18 +34,32 @@ footer.rr-footer { border-top: 1px solid var(--border); }
 .rr-title { margin:0 0 8px 0; font-size:1.4rem; }
 .rr-subtle { color: var(--muted); }
 
+/* header nav */
+.rr-headnav a { display:inline-flex; align-items:center; gap:6px; padding:6px 8px; border-radius:8px; }
+.rr-headnav a:hover { background: rgba(255,255,255,0.05); }
+
+/* Bottom nav */
 nav.rr-bottomnav {
   position: sticky; bottom: 0; width:100%; border-top:1px solid var(--border);
-  display:grid; grid-template-columns: repeat(3, 1fr);
+  display:grid; grid-template-columns: repeat(5, 1fr);
 }
-.rr-bottomnav a { display:block; text-align:center; padding:12px 8px; border-right:1px solid var(--border); }
+.rr-bottomnav a { display:flex; flex-direction:column; align-items:center; gap:6px; text-align:center; padding:10px 6px; border-right:1px solid var(--border); }
 .rr-bottomnav a:last-child { border-right:0; }
 .rr-bottomnav a.active { color: var(--accent-strong); font-weight: 600; }
 
-/* Light theme (optional) */
-body.light { background:var(--bg-light); color:var(--text-dark); }
-body.light .rr-page,
-body.light header.rr-header,
-body.light footer.rr-footer,
-body.light nav.rr-bottomnav { background:var(--card-light); border-color: var(--border-light); }
-body.light a { color: #0ea5e9; }
+/* Lists */
+.rr-list { list-style:none; padding:0; margin:8px 0 0 0; }
+.rr-list li { display:flex; justify-content:space-between; align-items:center; padding:10px 8px; border-bottom:1px solid var(--border); }
+.rr-badge { font-size:12px; padding:2px 6px; border-radius:999px; border:1px solid var(--border); }
+.rr-badge.pos { color: var(--success); border-color: var(--success); }
+.rr-badge.neg { color: var(--danger); border-color: var(--danger); }
+
+/* Search */
+.rr-search { display:flex; gap:8px; }
+.rr-search input { flex:1; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:transparent; color:var(--text); }
+.rr-search button { padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:transparent; color:var(--text); }
+
+/* Pills (tabs) */
+.rr-pills { display:flex; gap:8px; flex-wrap:wrap; margin:8px 0; }
+.rr-pill { padding:6px 10px; border-radius:999px; border:1px solid var(--border); }
+.rr-pill.active { background:rgba(255,255,255,0.06); border-color: var(--accent); }

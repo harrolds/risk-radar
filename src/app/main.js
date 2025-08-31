@@ -1,4 +1,3 @@
-// Bootstrapping app: header, main, footer en router
 import { initRouter } from './router.js';
 import { Header } from './components/Header.js';
 import { Footer } from './components/Footer.js';

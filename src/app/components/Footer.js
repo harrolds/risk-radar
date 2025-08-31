@@ -4,7 +4,7 @@ export function Footer() {
   el.innerHTML = `
     <div style="padding:12px 16px;display:flex;justify-content:space-between;align-items:center;">
       <span class="rr-subtle">© ${new Date().getFullYear()} RiskRadar</span>
-      <span class="rr-subtle">v1.0 Fase 1</span>
+      <span class="rr-subtle">Fase 1 UI-baseline</span>
     </div>
   `;
   return el;
