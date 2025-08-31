@@ -1,0 +1,1 @@
+export function renderTopBar(el){el.innerHTML='<div>TopBar</div>'}

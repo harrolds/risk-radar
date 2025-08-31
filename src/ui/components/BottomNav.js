@@ -1,0 +1,1 @@
+export function renderBottomNav(el){el.innerHTML='<div>BottomNav</div>'}
