@@ -1,7 +1,12 @@
+// Bootstrapping app: header, main, footer en router
 import { initRouter } from './router.js';
 import { Header } from './components/Header.js';
 import { Footer } from './components/Footer.js';
 import { BottomNav } from './components/BottomNav.js';
+
+// === THEMA: toepassen bij app-start ===
+const savedTheme = localStorage.getItem('rr_theme') || 'dark';
+document.body.classList.toggle('light', savedTheme === 'light');
 
 const appRoot = document.getElementById('rr-app');
 

@@ -7,25 +7,32 @@ export function renderSettingsPage() {
       <div>
         <label for="theme">Thema</label><br/>
         <select id="theme">
-          <option value="dark" selected>Donker</option>
+          <option value="dark">Donker</option>
           <option value="light">Licht</option>
         </select>
       </div>
       <div>
         <label for="lang">Taal</label><br/>
         <select id="lang">
-          <option value="nl" selected>Nederlands</option>
+          <option value="nl">Nederlands</option>
           <option value="en">English</option>
           <option value="de">Deutsch</option>
         </select>
       </div>
     </div>
-    <p class="rr-subtle" style="margin-top:8px;">(In Fase 2 koppelen we deze instellingen app-breed.)</p>
+    <p class="rr-subtle" style="margin-top:8px;">(Thema-instelling wordt opgeslagen en automatisch toegepast.)</p>
   `;
 
+  // Sync huidige thema naar select
   const themeSel = el.querySelector('#theme');
+  const current = localStorage.getItem('rr_theme') || 'dark';
+  themeSel.value = current;
+
+  // Wissel thema + opslaan
   themeSel.addEventListener('change', () => {
-    document.body.classList.toggle('light', themeSel.value === 'light');
+    const v = themeSel.value;
+    localStorage.setItem('rr_theme', v);
+    document.body.classList.toggle('light', v === 'light');
   });
 
   return el;
