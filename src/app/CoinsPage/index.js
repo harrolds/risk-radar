@@ -40,6 +40,23 @@ export function renderCoinsPage() {
   const qClear = search.querySelector('#rr-coins-clear');
   const listEl = listWrap.querySelector('#rr-coins-list');
 
+  // Delegated click: handle ☆/★ without navigating to detail
+  listEl.addEventListener('click', (e) => {
+    const btn = e.target.closest('button.rr-star');
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const id = btn.getAttribute('data-id');
+    toggleWatchlist(id);
+    const inList = isInWatchlist(id);
+    btn.setAttribute('aria-pressed', String(inList));
+    btn.textContent = inList ? '★' : '☆';
+    btn.title = inList ? 'Verwijder uit watchlist' : 'Voeg toe aan watchlist';
+    // Notify Home watchlist to refresh
+    try { window.dispatchEvent(new CustomEvent('rr:watchlist-changed')); } catch {}
+  });
+
+
   // Helpers
   const setActive = (tab) => {
     el.querySelectorAll('.rr-pill').forEach(a => {
@@ -55,7 +72,11 @@ export function renderCoinsPage() {
       const pctTxt = `${pct.toFixed(2)}%`;
       return `<li>
   <a href="#/coin/${c.id}" style="display:flex; justify-content:space-between; align-items:center; text-decoration:none; color:inherit;">
-    <span><img src="${c.image}" alt="" width="20" height="20" style="vertical-align:middle; margin-right:8px;" />${c.symbol} • ${c.name}</span>
+    <span style="display:flex; align-items:center; gap:8px;">
+          <button class="rr-star" style="background:transparent; border:none; cursor:pointer; font-size:16px; line-height:1; padding:0; position:relative; z-index:1;" data-id="${c.id}" aria-pressed="${isInWatchlist(c.id)}" title="${isInWatchlist(c.id) ? 'Verwijder uit watchlist' : 'Voeg toe aan watchlist'}" style="background:transparent; border:none; cursor:pointer; font-size:16px; line-height:1; padding:0;">${isInWatchlist(c.id) ? '★' : '☆'}</button>
+          <img src="${c.image}" alt="" width="20" height="20" style="vertical-align:middle;" />
+          <span>${c.symbol} • ${c.name}</span>
+        </span>
     <span><span style="opacity:.8; margin-right:10px;">${price}</span><span class="${cls}">${pctTxt}</span></span>
   </a>
 </li>`;
