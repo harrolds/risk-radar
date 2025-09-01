@@ -1,3 +1,4 @@
+import { isInWatchlist, toggleWatchlist } from '../data/watchlist.js';
 export function renderCoinDetailPage({ id }) {
   const el = document.createElement('div');
   el.className = 'rr-page';

@@ -220,6 +220,7 @@ export function renderHomePage() {
         // Fallback: top 7 gainers by 24h %
         items = all.slice().sort((a,b) => (b.price_change_percentage_24h ?? 0) - (a.price_change_percentage_24h ?? 0)).slice(0,7);
       }
+      items = items.slice().sort((a,b) => (b.price_change_percentage_24h ?? 0) - (a.price_change_percentage_24h ?? 0));
       trList.innerHTML = renderRowsWL(items);
       trEmpty.textContent = items.length ? '' : 'Geen trending items gevonden.';
     } catch (e) {
