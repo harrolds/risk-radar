@@ -11,7 +11,6 @@ export function initRouter({ mount }) {
     if (hash === '' || hash === '#' || hash === '#/') return { route: 'home', params: {} };
     if (hash.startsWith('#/coins')) return { route: 'coins', params: {} };
     if (hash.startsWith('#/settings')) return { route: 'settings', params: {} };
-    // Vergelijk, Portfolio, Pro zijn placeholders die voorlopig naar home verwijzen of eigen shell tonen
     if (hash.startsWith('#/compare')) return { route: 'compare', params: {} };
     if (hash.startsWith('#/portfolio')) return { route: 'portfolio', params: {} };
     if (hash.startsWith('#/pro')) return { route: 'pro', params: {} };
