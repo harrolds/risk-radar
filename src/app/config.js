@@ -2,7 +2,7 @@
 // MODE: "none" | "demo" | "pro"
 export const COINGECKO = {
   MODE: "demo",                  // "pro" voor Pro, "none" zonder key
-  API_KEY: "VUL_HIER_JE_KEY_IN", // <-- jouw key hier
+  API_KEY: "CG-qkcUsGMYirruAsAN2HM4wmCk", // <-- jouw key hier
   BASE_URL: "https://api.coingecko.com/api/v3",
   PRO_BASE_URL: "https://pro-api.coingecko.com/api/v3",
   VS_CURRENCY: "eur",
