@@ -1,4 +1,5 @@
 import { fetchCoinsMarkets } from '../data/coingecko.js';
+import { isInWatchlist, toggleWatchlist } from '../data/watchlist.js';
 
 export function renderCoinsPage() {
   const el = document.createElement('div');
