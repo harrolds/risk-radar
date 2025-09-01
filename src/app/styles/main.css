@@ -108,3 +108,41 @@ html, body { overflow-x: hidden; }
 :root[data-theme="light"] { --ok:#00A862; --warn:#C9851C; --danger:#DD3B3B; }
 
 .rr-error { color: var(--danger); padding:8px; }
+
+
+/* === Detail header & buttons === */
+.rr-page { max-width: 760px; margin: 0 auto; padding: 12px; }
+.rr-page-head { display:flex; align-items:flex-start; gap:12px; justify-content:space-between; }
+.rr-head-left h1 { margin:0; font-size:22px; }
+.rr-btn-row { margin-top:4px; display:flex; gap:8px; flex-wrap:wrap; }
+.rr-head-price { color: var(--muted); font-size:16px; }
+
+/* === IndicatorCard v2 === */
+.rr-grid { display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; }
+@media (max-width: 560px) { .rr-grid { grid-template-columns: 1fr; } }
+.rr-card { background: var(--card); border:1px solid var(--border); border-radius:14px; padding:12px; }
+.rr-ind-top { display:flex; align-items:center; gap:6px; margin-bottom:6px; }
+.rr-ind-icon { width:26px; height:26px; display:flex; align-items:center; justify-content:center; border-radius:50%; background: var(--border); color: var(--text); }
+.rr-ind-title { font-size:13px; color: var(--muted); }
+.rr-ind-value { font-size:15px; font-weight:600; margin-top:2px; }
+.rr-ind-hint { font-size:12px; color: var(--muted); }
+.rr-ind-gauge { margin-top:6px; }
+.rr-gauge-mini svg { display:block; margin:0 auto; }
+
+/* === Prediction block === */
+.rr-predict { margin-top:16px; }
+.rr-predict .rr-pills { display:flex; gap:6px; flex-wrap:wrap; }
+.rr-predict-result { margin-top:8px; }
+.rr-conf-bar { background:var(--border); height:10px; border-radius:6px; overflow:hidden; margin-top:4px; }
+.rr-conf-bar div { background: var(--accent); height:100%; }
+
+/* === Utility === */
+html, body { overflow-x: hidden; }
+.rr-pill { background: transparent; border:1px solid var(--border); border-radius:999px; padding:6px 10px; color: var(--text); }
+.rr-pill.active { background: rgba(100,200,100,0.12); }
+
+/* Tone colors */
+:root { --ok:#00C46A; --warn:#F5A524; --danger:#F75555; }
+:root[data-theme="light"] { --ok:#00A862; --warn:#C9851C; --danger:#DD3B3B; }
+
+.rr-error { color: var(--danger); padding:8px; }
