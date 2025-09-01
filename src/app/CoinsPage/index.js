@@ -40,6 +40,23 @@ export function renderCoinsPage() {
   const qClear = search.querySelector('#rr-coins-clear');
   const listEl = listWrap.querySelector('#rr-coins-list');
 
+  // Delegated click: handle ☆/★ without navigating to detail
+  listEl.addEventListener('click', (e) => {
+    const btn = e.target.closest('button.rr-star');
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const id = btn.getAttribute('data-id');
+    toggleWatchlist(id);
+    const inList = isInWatchlist(id);
+    btn.setAttribute('aria-pressed', String(inList));
+    btn.textContent = inList ? '★' : '☆';
+    btn.title = inList ? 'Verwijder uit watchlist' : 'Voeg toe aan watchlist';
+    // Notify Home watchlist to refresh
+    try { window.dispatchEvent(new CustomEvent('rr:watchlist-changed')); } catch {}
+  });
+
+
   // Helpers
   const setActive = (tab) => {
     el.querySelectorAll('.rr-pill').forEach(a => {
