@@ -41,6 +41,9 @@ export function renderHomePage() {
   const qClear = search.querySelector('#rr-home-clear');
   const resultsEl = resultsWrap.querySelector('#rr-home-results');
 
+  // Persisted query key
+  const QKEY = 'rr.home.q';
+
   // State
   let all = null;     // full market list (cached by fetchCoinsMarkets)
   let timer = null;
@@ -81,6 +84,9 @@ export function renderHomePage() {
   };
 
   // Load markets lazily on first input focus (less work on idle home)
+  const saveQuery = () => { try { sessionStorage.setItem(QKEY, (qInput.value || '').trim()); } catch {} };
+  const restoreQuery = () => { try { return sessionStorage.getItem(QKEY) || ''; } catch { return ''; } };
+
   const ensureData = async () => {
     if (all) return;
     status.textContent = 'Laden…';
@@ -108,12 +114,24 @@ export function renderHomePage() {
         doFilter();
       }
     }, 200);
+    saveQuery();
   });
   qClear.addEventListener('click', () => {
     qInput.value = '';
+    try { sessionStorage.removeItem(QKEY); } catch {}
     doFilter();
     qInput.focus();
   });
+
+  // Restore previous query if present
+  (async () => {
+    const q0 = restoreQuery();
+    if (q0) {
+      qInput.value = q0;
+      await ensureData();
+      doFilter();
+    }
+  })();
 
   // Accessibility tip (Content Manager: tooltip/uitleg)
   const tip = document.createElement('p');
