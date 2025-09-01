@@ -6,7 +6,7 @@ export function renderCoinDetailPage({ id }) {
   el.innerHTML = `
     <h1 class="rr-title">Coin detail – ${coin} <button id="rr-detail-star" class="rr-star" style="margin-left:8px; background:transparent; border:1px solid rgba(255,255,255,.15); border-radius:8px; padding:2px 8px; cursor:pointer; font-size:14px;">☆ Watch</button></h1>
     <p class="rr-subtle">Placeholder in Fase 1. In Fase 2 tonen we grafieken, RSI/MA/Bollinger en risicoscore.</p>
-    <p><a href="javascript:void(0)" id="rr-back-link">← Terug naar Coins</a></p>
+    <p><a href="javascript:void(0)" id="rr-back-link">← Terug</a></p>
   `;
     const backEl = el.querySelector('#rr-back-link');
   if (backEl) {
