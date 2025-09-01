@@ -149,7 +149,7 @@ export function renderHomePage() {
   const wlList = wlCard.querySelector('#rr-watchlist');
   const wlEmpty = wlCard.querySelector('#rr-watchlist-empty');
 
-  const renderRows = (coins) => coins.map(c => {
+  const renderRowsWL = (coins) => coins.map(c => {
     const pct = c.price_change_percentage_24h ?? 0;
     const cls = pct >= 0 ? 'rr-badge pos' : 'rr-badge neg';
     const price = (c.current_price ?? 0).toLocaleString('nl-NL', { style:'currency', currency:'EUR', maximumFractionDigits: 8 });
@@ -177,7 +177,7 @@ export function renderHomePage() {
       // Use cached markets data if already loaded
       const all = await fetchCoinsMarkets({ page: 1, perPage: 250 });
       const subset = all.filter(c => ids.includes(c.id));
-      wlList.innerHTML = renderRows(subset);
+      wlList.innerHTML = renderRowsWL(subset);
     } catch (e) {
       console.error(e);
       wlList.innerHTML = '<li class="rr-subtle">Kon watchlist niet laden.</li>';
@@ -220,7 +220,7 @@ export function renderHomePage() {
         // Fallback: top 7 gainers by 24h %
         items = all.slice().sort((a,b) => (b.price_change_percentage_24h ?? 0) - (a.price_change_percentage_24h ?? 0)).slice(0,7);
       }
-      trList.innerHTML = renderRows(items);
+      trList.innerHTML = renderRowsWL(items);
       trEmpty.textContent = items.length ? '' : 'Geen trending items gevonden.';
     } catch (e) {
       console.error(e);
