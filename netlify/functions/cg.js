@@ -1,7 +1,5 @@
-// Netlify Function: CoinGecko proxy with CORS
-// Usage: /.netlify/functions/cg?endpoint=ohlc&id=bitcoin&vs_currency=eur&days=90
-//     or /.netlify/functions/cg?endpoint=simple_price&ids=bitcoin&vs_currencies=eur
-export async function handler(event, context) {
+// Netlify Function: CoinGecko proxy (CommonJS)
+exports.handler = async function(event, context) {
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type, x-cg-demo-api-key, x-cg-pro-api-key',
@@ -29,7 +27,6 @@ export async function handler(event, context) {
     }
     const extraHeaders = {};
     if (process.env.CG_API_KEY) {
-      // Prefer demo key unless explicitly PRO; both allowed by CoinGecko headers
       extraHeaders['x-cg-demo-api-key'] = process.env.CG_API_KEY;
     }
     const resp = await fetch(url, { headers: extraHeaders });
@@ -38,4 +35,4 @@ export async function handler(event, context) {
   } catch (err) {
     return { statusCode: 502, headers, body: JSON.stringify({ error: String(err) }) };
   }
-}
+};
