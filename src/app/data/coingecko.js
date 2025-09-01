@@ -59,3 +59,18 @@ export async function fetchCoinsMarkets({ page = 1, perPage = 250 } = {}) {
   cacheSet(key, list);
   return list;
 }
+
+
+/** CoinGecko 'search/trending' — returns list of trending coins (ids) */
+export async function fetchTrending() {
+  const url = new URL(`${baseUrl()}/search/trending`);
+  const res = await fetch(url.toString(), { headers: authHeaders() });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`HTTP ${res.status} @ /search/trending :: ${text.slice(0,180)}`);
+  }
+  const data = await res.json();
+  // Normalize to ids list when possible
+  const ids = (data?.coins || []).map(x => x?.item?.id).filter(Boolean);
+  return ids;
+}

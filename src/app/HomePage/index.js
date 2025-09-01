@@ -1,4 +1,5 @@
-import { fetchCoinsMarkets } from '../data/coingecko.js';
+import { fetchCoinsMarkets, fetchTrending } from '../data/coingecko.js';
+import { getWatchlistIds, isInWatchlist, toggleWatchlist } from '../data/watchlist.js';
 
 export function renderHomePage() {
   const el = document.createElement('div');
@@ -138,7 +139,107 @@ export function renderHomePage() {
   tip.className = 'rr-subtle';
   tip.style.marginTop = '8px';
   tip.textContent = 'Tip: je kunt zoeken op naam (“bitcoin”) of symbool (“BTC”). Klik op een resultaat voor details.';
-  el.appendChild(tip);
+  
+  // Watchlist section
+  const wlCard = document.createElement('div');
+  wlCard.className = 'rr-card';
+  wlCard.innerHTML = `<h2 class="rr-title" style="font-size:18px;margin:0 0 8px 0;">Watchlist</h2><ul class="rr-list" id="rr-watchlist"></ul><p id="rr-watchlist-empty" class="rr-subtle">Nog geen coins in je watchlist.</p>`;
+  el.appendChild(wlCard);
+
+  const wlList = wlCard.querySelector('#rr-watchlist');
+  const wlEmpty = wlCard.querySelector('#rr-watchlist-empty');
+
+  const renderRowsWL = (coins) => coins.map(c => {
+    const pct = c.price_change_percentage_24h ?? 0;
+    const cls = pct >= 0 ? 'rr-badge pos' : 'rr-badge neg';
+    const price = (c.current_price ?? 0).toLocaleString('nl-NL', { style:'currency', currency:'EUR', maximumFractionDigits: 8 });
+    const pctTxt = `${pct.toFixed(2)}%`;
+    return `<li>
+      <a href="#/coin/${c.id}" style="display:flex; justify-content:space-between; align-items:center; text-decoration:none; color:inherit;">
+        <span>
+          <button class="rr-star" data-id="${c.id}" aria-pressed="${isInWatchlist(c.id)}" title="${isInWatchlist(c.id) ? 'Verwijder uit watchlist' : 'Voeg toe aan watchlist'}" style="margin-right:8px; background:transparent; border:none; cursor:pointer; font-size:16px; line-height:1;">${isInWatchlist(c.id) ? '★' : '☆'}</button>
+          ${c.symbol} • ${c.name}
+        </span>
+        <span><span style="opacity:.8; margin-right:10px;">${price}</span><span class="${cls}">${pctTxt}</span></span>
+      </a>
+    </li>`;
+  }).join('');
+
+  const refreshWatchlist = async () => {
+    const ids = getWatchlistIds();
+    if (!ids.length) {
+      wlList.innerHTML = '';
+      wlEmpty.style.display = '';
+      return;
+    }
+    wlEmpty.style.display = 'none';
+    try {
+      // Use cached markets data if already loaded
+      const all = await fetchCoinsMarkets({ page: 1, perPage: 250 });
+      const subset = all.filter(c => ids.includes(c.id));
+      wlList.innerHTML = renderRowsWL(subset);
+    } catch (e) {
+      console.error(e);
+      wlList.innerHTML = '<li class="rr-subtle">Kon watchlist niet laden.</li>';
+    }
+  };
+
+  wlList.addEventListener('click', (e) => {
+    const btn = e.target.closest('button.rr-star');
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const id = btn.getAttribute('data-id');
+    toggleWatchlist(id);
+    refreshWatchlist();
+  });
+
+  window.addEventListener('rr:watchlist-changed', refreshWatchlist);
+  refreshWatchlist();
+
+  // Trending section
+  const trCard = document.createElement('div');
+  trCard.className = 'rr-card';
+  trCard.style.marginTop = '12px';
+  trCard.innerHTML = `<h2 class="rr-title" style="font-size:18px;margin:0 0 8px 0;">Trending</h2><ul class="rr-list" id="rr-trending"></ul><p id="rr-trending-empty" class="rr-subtle">Laden…</p>`;
+  el.appendChild(trCard);
+
+  const trList = trCard.querySelector('#rr-trending');
+  const trEmpty = trCard.querySelector('#rr-trending-empty');
+
+  const refreshTrending = async () => {
+    trEmpty.textContent = 'Laden…';
+    try {
+      const [all, ids] = await Promise.all([fetchCoinsMarkets({ page:1, perPage:250 }), fetchTrending().catch(() => [])]);
+      let items = [];
+      if (ids && ids.length) {
+        // Enrich trending ids with market data
+        items = all.filter(c => ids.includes(c.id));
+      }
+      if (!items.length) {
+        // Fallback: top 7 gainers by 24h %
+        items = all.slice().sort((a,b) => (b.price_change_percentage_24h ?? 0) - (a.price_change_percentage_24h ?? 0)).slice(0,7);
+      }
+      items = items.slice().sort((a,b) => (b.price_change_percentage_24h ?? 0) - (a.price_change_percentage_24h ?? 0));
+      trList.innerHTML = renderRowsWL(items);
+      trEmpty.textContent = items.length ? '' : 'Geen trending items gevonden.';
+    } catch (e) {
+      console.error(e);
+      trEmpty.textContent = 'Kon trending niet laden.';
+    }
+  };
+  trList.addEventListener('click', (e) => {
+    const btn = e.target.closest('button.rr-star');
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const id = btn.getAttribute('data-id');
+    toggleWatchlist(id);
+    refreshWatchlist();
+    refreshTrending();
+  });
+  refreshTrending();
+el.appendChild(tip);
 
   return el;
 }
