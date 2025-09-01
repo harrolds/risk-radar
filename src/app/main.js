@@ -35,5 +35,5 @@ appRoot.appendChild(shell);
 
 initRouter({ mount: main });
 
-// export for SettingsPage usage (optional)
+// export for SettingsPage usage
 export { applyTheme };
