@@ -1,8 +1,11 @@
+import { fetchCoinsMarkets } from '../data/coingecko.js';
+
 export function renderCoinsPage() {
   const el = document.createElement('div');
   el.className = 'rr-page';
   el.innerHTML = `<h1 class="rr-title">Coins</h1>`;
 
+  // Pills (tabs) — behoud originele DOM-structuur en classes
   const pills = document.createElement('div');
   pills.className = 'rr-pills';
   pills.innerHTML = `
@@ -12,60 +15,129 @@ export function renderCoinsPage() {
   `;
   el.appendChild(pills);
 
-  const listWrap = document.createElement('div');
-  listWrap.innerHTML = `
-    <ul class="rr-list" id="rr-coins-list"></ul>
-    <p class="rr-subtle">Dummy lijsten in Fase 1. Live data & zoekfunctie volgen in Fase 2.</p>
+  // Search bar — gebruikt bestaande .rr-search styles
+  const search = document.createElement('div');
+  search.className = 'rr-search';
+  search.innerHTML = `
+    <input id="rr-coins-q" type="text" placeholder="Zoek op naam of symbool…" aria-label="Zoek coin" />
+    <button id="rr-coins-clear" type="button">Wis</button>
   `;
+  el.appendChild(search);
+
+  // List container — behoud .rr-list classes
+  const listWrap = document.createElement('div');
+  listWrap.innerHTML = `<ul class="rr-list" id="rr-coins-list"></ul>`;
   el.appendChild(listWrap);
 
-  const coinsList = listWrap.querySelector('#rr-coins-list');
+  // Status element
+  const status = document.createElement('div');
+  status.id = 'rr-coins-status';
+  status.style.marginTop = '8px';
+  el.appendChild(status);
 
-  function renderTab(tab='all') {
-    coinsList.innerHTML = '';
-    const data = {
-      all: [
-        ['BTC • Bitcoin', '+2.1%','pos','bitcoin'],
-        ['ETH • Ethereum', '-0.4%','neg','ethereum'],
-        ['SOL • Solana', '+1.2%','pos','solana'],
-        ['BNB • BNB', '+0.6%','pos','binancecoin']
-      ],
-      gainers: [
-        ['PEPE • Pepe', '+12.3%','pos','pepe'],
-        ['SOL • Solana', '+1.2%','pos','solana'],
-        ['INJ • Injective','+0.9%','pos','injective-protocol']
-      ],
-      losers: [
-        ['ARB • Arbitrum', '-1.9%','neg','arbitrum'],
-        ['ETH • Ethereum', '-0.4%','neg','ethereum']
-      ]
-    }[tab] || [];
+  const qInput = search.querySelector('#rr-coins-q');
+  const qClear = search.querySelector('#rr-coins-clear');
+  const listEl = listWrap.querySelector('#rr-coins-list');
 
-    data.forEach(([name, pct, cls, slug]) => {
-      const li = document.createElement('li');
-      li.innerHTML = `<span>${name}</span> <span class="rr-badge ${cls}">${pct}</span>`;
-      li.addEventListener('click', () => { window.location.hash = `#/coin/${slug}`; });
-      coinsList.appendChild(li);
+  // Helpers
+  const setActive = (tab) => {
+    el.querySelectorAll('.rr-pill').forEach(a => {
+      a.classList.toggle('active', a.dataset.tab === tab);
     });
-  }
+  };
 
-  function setActive(tab) {
-    el.querySelectorAll('.rr-pill').forEach(a => a.classList.toggle('active', a.dataset.tab === tab));
-  }
+  const renderRows = (rows) => {
+    listEl.innerHTML = rows.map(c => {
+      const pct = c.price_change_percentage_24h ?? 0;
+      const cls = pct >= 0 ? 'rr-badge pos' : 'rr-badge neg';
+      const price = (c.current_price ?? 0).toLocaleString('nl-NL', { style:'currency', currency:'EUR', maximumFractionDigits: 8 });
+      const pctTxt = `${pct.toFixed(2)}%`;
+      return `<li>
+  <a href="#/coin/${c.id}" style="display:flex; justify-content:space-between; align-items:center; text-decoration:none; color:inherit;">
+    <span><img src="${c.image}" alt="" width="20" height="20" style="vertical-align:middle; margin-right:8px;" />${c.symbol} • ${c.name}</span>
+    <span><span style="opacity:.8; margin-right:10px;">${price}</span><span class="${cls}">${pctTxt}</span></span>
+  </a>
+</li>`;
+    }).join('');
+  };
 
-  const current = new URLSearchParams((location.hash.split('?')[1]||'')).get('tab') || 'all';
-  setActive(current);
-  renderTab(current);
+  // State
+  let all = [];
+  let filtered = [];
+  let currentTab = 'all';
 
+  const applyFilters = () => {
+    const q = (qInput.value || '').trim().toLowerCase();
+    let view = all;
+
+    if (currentTab === 'gainers') view = view.filter(c => (c.price_change_percentage_24h ?? 0) > 0);
+    if (currentTab === 'losers')  view = view.filter(c => (c.price_change_percentage_24h ?? 0) < 0);
+
+    if (q) {
+      view = view.filter(c => c.name.toLowerCase().includes(q) || c.symbol.toLowerCase().includes(q));
+    }
+    filtered = view;
+    renderRows(filtered);
+  };
+
+  // Load
+  (async () => {
+    status.textContent = 'Laden…';
+    try {
+      all = await fetchCoinsMarkets({ page: 1, perPage: 250 });
+      status.textContent = '';
+      applyFilters();
+    } catch (err) {
+      console.error(err);
+      status.innerHTML = `<div class="rr-subtle">Kon coins niet laden. <button id="rr-retry" type="button">Opnieuw proberen</button></div>`;
+      status.querySelector('#rr-retry')?.addEventListener('click', () => {
+        status.textContent = '';
+        all = [];
+        applyFilters();
+        // retry
+        (async () => {
+          status.textContent = 'Laden…';
+          try {
+            all = await fetchCoinsMarkets({ page: 1, perPage: 250 });
+            status.textContent = '';
+            applyFilters();
+          } catch (e) {
+            status.textContent = 'Fout: laden mislukt.';
+          }
+        })();
+      });
+    }
+  })();
+
+  // Events
   el.querySelectorAll('.rr-pill').forEach(a => {
     a.addEventListener('click', (e) => {
       e.preventDefault();
       const tab = a.dataset.tab;
+      currentTab = tab;
       setActive(tab);
-      renderTab(tab);
+      // update hash zonder volledige reroute
       history.replaceState(null,'', `#/coins?tab=${tab}`);
+      applyFilters();
     });
   });
+
+  let t;
+  qInput.addEventListener('input', () => {
+    clearTimeout(t);
+    t = setTimeout(applyFilters, 200);
+  });
+  qClear.addEventListener('click', () => {
+    qInput.value = '';
+    applyFilters();
+  });
+
+  // Initial tab from URL (preserve original behavior)
+  const m = (location.hash || '').match(/tab=(all|gainers|losers)/);
+  if (m) {
+    currentTab = m[1];
+    setActive(currentTab);
+  }
 
   return el;
 }
