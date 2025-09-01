@@ -5,11 +5,8 @@ import { PredictionBlock } from '../components/PredictionBlock.js';
 import { fetchOHLC } from '../data/ohlcService.js';
 import { RSI, SMA, MACD, Bollinger } from '../data/indicators.js';
 import { COINGECKO } from '../config.js';
+import { fetchPriceOrFallback } from '../data/priceService.js';
 
-async function fetchPrice(coinId){
-  const url=`${COINGECKO.BASE_URL}/simple/price?ids=${encodeURIComponent(coinId)}&vs_currencies=${COINGECKO.VS_CURRENCY}`;
-  const r=await fetch(url); const j=await r.json(); return j?.[coinId]?.[COINGECKO.VS_CURRENCY]??null;
-}
 function toneFrom(value,kind){ if(value==null)return'neutral'; if(kind==='rsi'){if(value<30||value>70)return'warn';return'ok';} if(kind==='macd'){return value>0?'ok':'danger';} if(kind==='ma'){return value>0?'ok':'danger';} return'neutral'; }
 
 export function renderCoinDetailPage({ id }){
@@ -33,7 +30,7 @@ export function renderCoinDetailPage({ id }){
   const star=el.querySelector('#rr-detail-star');
   if(star){ const sync=()=>{const a=isInWatchlist(id); star.textContent=a?'★ In watchlist':'☆ Watch'; star.classList.toggle('active',a);}; sync(); star.addEventListener('click',e=>{e.preventDefault(); toggleWatchlist(id); sync();}); }
   const cmp=el.querySelector('#rr-compare'); if(cmp){ cmp.addEventListener('click',e=>{e.preventDefault(); location.hash=`#/compare?base=${id}`; }); }
-  fetchPrice(id).then(p=>{const t=el.querySelector('#rr-head-price'); if(t) t.textContent=p!=null? new Intl.NumberFormat('nl-NL',{style:'currency',currency:COINGECKO.VS_CURRENCY.toUpperCase()}).format(p):'—';}).catch(()=>{});
+  fetchPriceOrFallback({ coinId: id, vsCurrency: COINGECKO.VS_CURRENCY }).then(p=>{const t=el.querySelector('#rr-head-price'); if(t) t.textContent=p!=null? new Intl.NumberFormat('nl-NL',{style:'currency',currency:COINGECKO.VS_CURRENCY.toUpperCase()}).format(p):'—';}).catch(()=>{});
 
   const hero=el.querySelector('#rr-hero'); const grid=el.querySelector('#rr-indicators');
   (async()=>{
