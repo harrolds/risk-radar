@@ -181,7 +181,7 @@ export function renderHomePage() {
       wlList.innerHTML = renderRowsWL(subset);
     } catch (e) {
       console.error(e);
-      wlList.innerHTML = '<li class="rr-subtle">Kon watchlist niet laden.</li>';
+      /* keep old list on error */
     }
   };
 
@@ -245,7 +245,7 @@ el.appendChild(tip);
   
   // Auto-refresh hook: update watchlist & trending on global refresh
   try {
-    const onRRRefresh = () => { try { refreshWatchlist && refreshWatchlist(); } catch(e){} try { refreshTrending && refreshTrending(); } catch(e){} };
+    const onRRRefresh = () => { const d = Math.floor(Math.random()*300); setTimeout(()=>{ try { refreshWatchlist && refreshWatchlist(); } catch(e){} try { refreshTrending && refreshTrending(); } catch(e){} }, d); };
     window.addEventListener('rr:refresh', onRRRefresh);
     el.addEventListener('rr:teardown', () => window.removeEventListener('rr:refresh', onRRRefresh));
   } catch(e) {}
