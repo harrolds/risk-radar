@@ -41,7 +41,8 @@ export async function fetchCoinsMarkets({ page = 1, perPage = 250 } = {}) {
   url.searchParams.set("page", String(page));
   url.searchParams.set("price_change_percentage", "24h");
 
-  const res = await fetch(url.toString(), { headers: authHeaders() });
+  url.searchParams.set("_t", Date.now());
+  const res = await fetch(url.toString(), { headers: authHeaders(), cache: "no-store" });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
     throw new Error(`HTTP ${res.status} @ /coins/markets :: ${text.slice(0,180)}`);
@@ -64,7 +65,8 @@ export async function fetchCoinsMarkets({ page = 1, perPage = 250 } = {}) {
 /** CoinGecko 'search/trending' — returns list of trending coins (ids) */
 export async function fetchTrending() {
   const url = new URL(`${baseUrl()}/search/trending`);
-  const res = await fetch(url.toString(), { headers: authHeaders() });
+  url.searchParams.set("_t", Date.now());
+  const res = await fetch(url.toString(), { headers: authHeaders(), cache: "no-store" });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
     throw new Error(`HTTP ${res.status} @ /search/trending :: ${text.slice(0,180)}`);

@@ -241,5 +241,13 @@ export function renderHomePage() {
   refreshTrending();
 el.appendChild(tip);
 
+  
+  // Auto-refresh hook: update watchlist & trending on global refresh
+  try {
+    const onRRRefresh = () => { try { refreshWatchlist && refreshWatchlist(); } catch(e){} try { refreshTrending && refreshTrending(); } catch(e){} };
+    window.addEventListener('rr:refresh', onRRRefresh);
+    el.addEventListener('rr:teardown', () => window.removeEventListener('rr:refresh', onRRRefresh));
+  } catch(e) {}
   return el;
+
 }

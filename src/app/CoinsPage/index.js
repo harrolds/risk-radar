@@ -161,5 +161,21 @@ export function renderCoinsPage() {
     setActive(currentTab);
   }
 
+  
+  // Auto-refresh hook: reapply filters (and refetch if code supports it)
+  try {
+    const onRRRefresh = () => {
+      try { applyFilters && applyFilters(); } catch(_e) {}
+      // Fallback: simulate clicking active tab to trigger reload if implemented that way
+      try {
+        const active = pills.querySelector('.rr-pill.active');
+        if (active) active.click();
+      } catch(_e) {}
+    };
+    window.addEventListener('rr:refresh', onRRRefresh);
+    el.addEventListener('rr:teardown', () => window.removeEventListener('rr:refresh', onRRRefresh));
+  } catch(_e) {}
+
   return el;
+
 }
