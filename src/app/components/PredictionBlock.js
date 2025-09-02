@@ -46,7 +46,7 @@ export function PredictionBlock({ coinId }){
       const mean = rets.reduce((a,b)=>a+b,0)/(rets.length||1);
       const variance = rets.reduce((a,b)=>a+(b-mean)*(b-mean),0)/(rets.length||1);
       const sigma = Math.sqrt(variance); // daily
-      const horizonDays = h; // 1,7,30
+      const horizonDays = days; // 1,7,30
       const z = 1; // ~68% band
       const factor = Math.exp(z * sigma * Math.sqrt(Math.max(1, horizonDays)));
       let low = currentPrice / factor;
@@ -56,7 +56,7 @@ export function PredictionBlock({ coinId }){
       if (dir==='Dalend'){ low = currentPrice / (factor*0.9); high = currentPrice * (factor*0.9); [low,high] = [low*1.02, high*0.98]; }
       res.innerHTML = `<div><strong>${dir}</strong></div>
         <div class="rr-conf-bar"><div style="width:${conf}%"></div></div>
-        <div class="rr-subtle" style="margin-top:8px;">Verwachte prijs (±1σ) voor ${h===1?'24 uur':(h===7?'7 dagen':'30 dagen')}: 
+        <div class="rr-subtle" style="margin-top:8px;">Verwachte prijs (±1σ) voor ${days===1?'24 uur':(days===7?'7 dagen':'30 dagen')}: 
           <strong>${formatPriceEUR(low)}</strong> tot <strong>${formatPriceEUR(high)}</strong></div>`;
     }catch(e){ res.textContent='Kon voorspelling niet laden'; }
   }
