@@ -5,7 +5,7 @@ import { IndicatorCard } from '../../components/IndicatorCard.js';
 import { PredictionBlock } from '../../components/PredictionBlock.js';
 import { fetchOHLC } from '../../data/ohlcService.js';
 import { RSI, SMA, MACD, Bollinger } from '../../data/indicators.js';
-import { COINGECKO } from '../config.js';
+import { COINGECKO } from '../../config.js';
 import { fetchPriceOrFallback } from '../../data/priceService.js';
 import { fetchMarketsByIds } from '../../data/coingecko.js';
 

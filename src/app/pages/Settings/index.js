@@ -1,4 +1,4 @@
-import { applyTheme } from '../main.js';
+import { applyTheme } from '../../main.js';
 
 export function renderSettingsPage() {
   const el = document.createElement('div');
