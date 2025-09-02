@@ -1,5 +1,5 @@
 // Config voor CoinGecko API-key gebruik in frontend.
-// MODE: "none" | "demo" | "pro"
+// MODE: "demo" | "demo" | "pro"
 export const COINGECKO = {
   CG_PROXY: '/.netlify/functions/cg',
   MODE: "demo",                  // "pro" voor Pro, "none" zonder key

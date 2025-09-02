@@ -4,7 +4,7 @@ function baseUrl() {
   return COINGECKO.MODE === "pro" ? COINGECKO.PRO_BASE_URL : COINGECKO.BASE_URL;
 }
 
-function authHeaders() {
+function {} {
   const headers = { Accept: "application/json" };
   if (COINGECKO.MODE === "demo" && COINGECKO.API_KEY) {
     headers["x-cg-demo-api-key"] = COINGECKO.API_KEY; // demo key
@@ -50,7 +50,7 @@ export async function fetchCoinsMarkets({ page = 1, perPage = 250 } = {}) {
   const cached = cacheGet(key);
   if (cached) return cached;
 
-  const url = new URL(`${baseUrl()}/coins/markets`);
+  const url = new URL(`${COINGECKO.CG_PROXY}?endpoint=coins_markets`);
   url.searchParams.set("vs_currency", COINGECKO.VS_CURRENCY);
   url.searchParams.set("order", "market_cap_desc");
   url.searchParams.set("per_page", String(perPage));
@@ -58,7 +58,7 @@ export async function fetchCoinsMarkets({ page = 1, perPage = 250 } = {}) {
   url.searchParams.set("price_change_percentage", "24h");
 
   url.searchParams.set("_t", Date.now());
-  const res = await fetch(url.toString(), { headers: authHeaders(), cache: "no-store" });
+  const res = await fetch(url.toString(), { headers: {}, cache: "no-store" });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
     throw new Error(`HTTP ${res.status} @ /coins/markets :: ${text.slice(0,180)}`);
@@ -80,9 +80,9 @@ export async function fetchCoinsMarkets({ page = 1, perPage = 250 } = {}) {
 
 /** CoinGecko 'search/trending' — returns list of trending coins (ids) */
 export async function fetchTrending() {
-  const url = new URL(`${baseUrl()}/search/trending`);
+  const url = new URL(`${COINGECKO.CG_PROXY}?endpoint=search_trending`);
   url.searchParams.set("_t", Date.now());
-  const res = await fetch(url.toString(), { headers: authHeaders(), cache: "no-store" });
+  const res = await fetch(url.toString(), { headers: {}, cache: "no-store" });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
     throw new Error(`HTTP ${res.status} @ /search/trending :: ${text.slice(0,180)}`);
@@ -96,12 +96,12 @@ export async function fetchTrending() {
 /** Fetch markets for specific coin IDs (batch) */
 export async function fetchMarketsByIds(ids = []){
   if (!ids || ids.length === 0) return [];
-  const url = new URL(`${baseUrl()}/coins/markets`);
+  const url = new URL(`${COINGECKO.CG_PROXY}?endpoint=coins_markets`);
   url.searchParams.set("vs_currency", COINGECKO.VS_CURRENCY);
   url.searchParams.set("ids", ids.join(","));
   url.searchParams.set("price_change_percentage", "24h");
   url.searchParams.set("_t", Date.now());
-  const data = await _request(url.toString(), { headers: authHeaders() });
+  const data = await _request(url.toString(), { headers: {} });
   return data.map(x => ({
     id: x.id,
     current_price: x.current_price,
