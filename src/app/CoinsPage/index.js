@@ -201,7 +201,7 @@ export function renderCoinsPage() {
       });
     }catch(e){ console.warn('updateVisiblePricesCoins', e); }
   }
-  const onRRRefreshCoins = () => updateVisiblePricesCoins();
+  const onRRRefreshCoins = () => { const d=Math.floor(Math.random()*300); setTimeout(updateVisiblePricesCoins, d); };
   window.addEventListener('rr:refresh', onRRRefreshCoins);
   el.addEventListener('rr:teardown', () => window.removeEventListener('rr:refresh', onRRRefreshCoins));
 

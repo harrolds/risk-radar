@@ -15,6 +15,22 @@ function authHeaders() {
   return headers;
 }
 
+async function _request(url, opts={}){
+  let attempt=0;
+  const max=3;
+  while(true){
+    try{
+      const res = await fetch(url, { cache: 'no-store', ...opts });
+      if (res.status===429 && attempt<max){ await new Promise(r=>setTimeout(r, 400 * Math.pow(2, attempt++))); continue; }
+      if (!res.ok) throw new Error('HTTP '+res.status);
+      return await res.json();
+    }catch(e){
+      if (attempt>=max) throw e;
+      await new Promise(r=>setTimeout(r, 300 * Math.pow(2, attempt++)));
+    }
+  }
+}
+
 function cacheGet(key) {
   try {
     const raw = sessionStorage.getItem(key);
@@ -85,12 +101,7 @@ export async function fetchMarketsByIds(ids = []){
   url.searchParams.set("ids", ids.join(","));
   url.searchParams.set("price_change_percentage", "24h");
   url.searchParams.set("_t", Date.now());
-  const res = await fetch(url.toString(), { headers: authHeaders(), cache: "no-store" });
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`HTTP ${res.status} @ /coins/markets(ids) :: ${text.slice(0,180)}`);
-  }
-  const data = await res.json();
+  const data = await _request(url.toString(), { headers: authHeaders() });
   return data.map(x => ({
     id: x.id,
     current_price: x.current_price,

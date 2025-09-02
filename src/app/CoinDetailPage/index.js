@@ -33,6 +33,15 @@ export function renderCoinDetailPage({ id }){
   const cmp=el.querySelector('#rr-compare'); if(cmp){ cmp.addEventListener('click',e=>{e.preventDefault(); location.hash=`#/compare?base=${id}`; }); }
   fetchPriceOrFallback({ coinId: id, vsCurrency: COINGECKO.VS_CURRENCY }).then(p=>{ const t=el.querySelector('#rr-head-price'); if(t) t.textContent = formatPriceEUR(p); if(t) t.textContent=p!=null? new Intl.NumberFormat('nl-NL',{style:'currency',currency:COINGECKO.VS_CURRENCY.toUpperCase()}).format(p):'—';}).catch(()=>{});
 
+  
+  (async()=>{
+    try{
+      const p = await fetchPriceOrFallback({ coinId: id, vsCurrency: COINGECKO.VS_CURRENCY });
+      const t = el.querySelector('#rr-head-price');
+      if (t) t.textContent = formatPriceEUR(p);
+    }catch(e){}
+  })();
+
   const hero=el.querySelector('#rr-hero'); const grid=el.querySelector('#rr-indicators');
   (async()=>{
     try{
