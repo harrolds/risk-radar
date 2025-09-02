@@ -1,3 +1,4 @@
+import { t } from '../../i18n/index.js';
 import { formatPriceEUR, formatPct2 } from '../../utils/format.js';
 import { fetchCoinsMarkets, fetchMarketsByIds } from '../../data/coingecko.js';
 import { isInWatchlist, toggleWatchlist } from '../../data/watchlist.js';
