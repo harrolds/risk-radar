@@ -15,6 +15,7 @@ function trendScore(closes){
   return {dir,conf};
 }
 
+function _ascending(a,b){ return a<=b ? [a,b] : [b,a]; }
 export function PredictionBlock({ coinId }){
   const el=document.createElement('div');
   el.className='rr-predict';
