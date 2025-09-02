@@ -7,6 +7,7 @@ import { fetchOHLC } from '../data/ohlcService.js';
 import { RSI, SMA, MACD, Bollinger } from '../data/indicators.js';
 import { COINGECKO } from '../config.js';
 import { fetchPriceOrFallback } from '../data/priceService.js';
+import { fetchMarketsByIds } from '../data/coingecko.js';
 
 function toneFrom(value,kind){ if(value==null)return'neutral'; if(kind==='rsi'){if(value<30||value>70)return'warn';return'ok';} if(kind==='macd'){return value>0?'ok':'danger';} if(kind==='ma'){return value>0?'ok':'danger';} return'neutral'; }
 
@@ -41,6 +42,26 @@ export function renderCoinDetailPage({ id }){
       if (t) t.textContent = formatPriceEUR(p);
     }catch(e){}
   })();
+
+
+  async function updateDetailPriceUnified(){
+    try{
+      // Prefer marketsByIds to align with lists (price & pct from same source)
+      const arr = await fetchMarketsByIds([id]);
+      if (arr && arr.length){
+        const d = arr[0];
+        const t = el.querySelector('#rr-head-price');
+        if (t) t.textContent = formatPriceEUR(d.current_price);
+        return;
+      }
+    }catch(e){}
+    // Fallback to simple_price if marketsByIds not available
+    try{
+      const p = await fetchPriceOrFallback({ coinId: id, vsCurrency: COINGECKO.VS_CURRENCY });
+      const t = el.querySelector('#rr-head-price');
+      if (t) t.textContent = formatPriceEUR(p);
+    }catch(e){}
+  }
 
   const hero=el.querySelector('#rr-hero'); const grid=el.querySelector('#rr-indicators');
   (async()=>{
@@ -82,8 +103,8 @@ export function renderCoinDetailPage({ id }){
       }
     }catch(e){}
   }
-  const onRRRefreshDetail = () => updateDetailPrice();
-  window.addEventListener('rr:refresh', onRRRefreshDetail);
+  const onRRRefreshDetail = () => updateDetailPriceUnified();
+window.addEventListener('rr:refresh', onRRRefreshDetail);
   el.addEventListener('rr:teardown', () => window.removeEventListener('rr:refresh', onRRRefreshDetail));
 
   return el;
