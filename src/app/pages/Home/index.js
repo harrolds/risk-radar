@@ -10,7 +10,6 @@ export function renderHomePage() {
   // Title
   const title = document.createElement('h1');
   title.className = 'rr-title';
-  import { t } from '../../i18n/index.js';
   title.textContent = t('app.title');
   el.appendChild(title);
 
