@@ -48,6 +48,6 @@ export function initRouter({ mount }) {
 
   window.addEventListener('hashchange', render);
   window.addEventListener('load', render);
-  window.addEventListener('rr:refresh', render);
+  
   render();
 }

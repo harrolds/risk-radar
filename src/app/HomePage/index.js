@@ -1,4 +1,5 @@
-import { fetchCoinsMarkets, fetchTrending } from '../data/coingecko.js';
+import { formatPriceEUR, formatPct2 } from '../utils/format.js';
+import { fetchCoinsMarkets, fetchTrending, fetchMarketsByIds } from '../data/coingecko.js';
 import { getWatchlistIds, isInWatchlist, toggleWatchlist } from '../data/watchlist.js';
 
 export function renderHomePage() {
@@ -54,12 +55,12 @@ export function renderHomePage() {
     resultsEl.innerHTML = rows.map(c => {
       const pct = c.price_change_percentage_24h ?? 0;
       const cls = pct >= 0 ? 'rr-badge pos' : 'rr-badge neg';
-      const price = (c.current_price ?? 0).toLocaleString('nl-NL', { style:'currency', currency:'EUR', maximumFractionDigits: 8 });
-      const pctTxt = `${pct.toFixed(2)}%`;
-      return `<li>
+      const price = formatPriceEUR(c.current_price);
+    const pctTxt = formatPct2(pct);
+    return `<li>
         <a href="#/coin/${c.id}" style="display:flex; justify-content:space-between; align-items:center; text-decoration:none; color:inherit;">
           <span><img src="${c.image}" alt="" width="20" height="20" style="vertical-align:middle; margin-right:8px;" />${c.symbol} • ${c.name}</span>
-          <span><span style="opacity:.8; margin-right:10px;">${price}</span><span class="${cls}">${pctTxt}</span></span>
+          <span><span style="opacity:.8; margin-right:10px;"><span class="rr-price" data-id="${c.id}" data-field="price">${price}</span></span><span class="${cls}"><span class="rr-pct" data-id="${c.id}" data-field="pct24h">${pctTxt}</span></span></span>
         </a>
       </li>`;
     }).join('');
@@ -152,15 +153,15 @@ export function renderHomePage() {
   const renderRowsWL = (coins) => coins.map(c => {
     const pct = c.price_change_percentage_24h ?? 0;
     const cls = pct >= 0 ? 'rr-badge pos' : 'rr-badge neg';
-    const price = (c.current_price ?? 0).toLocaleString('nl-NL', { style:'currency', currency:'EUR', maximumFractionDigits: 8 });
-    const pctTxt = `${pct.toFixed(2)}%`;
+    const price = formatPriceEUR(c.current_price);
+    const pctTxt = formatPct2(pct);
     return `<li>
       <a href="#/coin/${c.id}" style="display:flex; justify-content:space-between; align-items:center; text-decoration:none; color:inherit;">
         <span>
           <button class="rr-star" data-id="${c.id}" aria-pressed="${isInWatchlist(c.id)}" title="${isInWatchlist(c.id) ? 'Verwijder uit watchlist' : 'Voeg toe aan watchlist'}" style="margin-right:8px; background:transparent; border:none; cursor:pointer; font-size:16px; line-height:1;">${isInWatchlist(c.id) ? '★' : '☆'}</button>
           ${c.symbol} • ${c.name}
         </span>
-        <span><span style="opacity:.8; margin-right:10px;">${price}</span><span class="${cls}">${pctTxt}</span></span>
+        <span><span style="opacity:.8; margin-right:10px;"><span class="rr-price" data-id="${c.id}" data-field="price">${price}</span></span><span class="${cls}"><span class="rr-pct" data-id="${c.id}" data-field="pct24h">${pctTxt}</span></span></span>
       </a>
     </li>`;
   }).join('');
@@ -248,6 +249,37 @@ el.appendChild(tip);
     window.addEventListener('rr:refresh', onRRRefresh);
     el.addEventListener('rr:teardown', () => window.removeEventListener('rr:refresh', onRRRefresh));
   } catch(e) {}
+  
+  // Incremental price/pct updater for Home widgets
+  async function updateVisiblePricesHome(){
+    try{
+      const spans = Array.from(el.querySelectorAll('[data-field="price"],[data-field="pct24h"]'));
+      const ids = Array.from(new Set(spans.map(s => s.getAttribute('data-id')).filter(Boolean)));
+      if(ids.length===0) return;
+      const fresh = await fetchMarketsByIds(ids);
+      const map = new Map(fresh.map(x => [x.id, x]));
+      // prices
+      el.querySelectorAll('[data-field="price"]').forEach(sp => {
+        const id = sp.getAttribute('data-id'); const d = map.get(id); if(!d) return;
+        const newTxt = formatPriceEUR(d.current_price);
+        if(sp.textContent !== newTxt){
+          const up = (d.price_change_percentage_24h ?? 0) >= 0;
+          sp.textContent = newTxt;
+          sp.classList.remove('rr-tick-up','rr-tick-down');
+          sp.classList.add(up ? 'rr-tick-up' : 'rr-tick-down');
+        }
+      });
+      // pct
+      el.querySelectorAll('[data-field="pct24h"]').forEach(sp => {
+        const id = sp.getAttribute('data-id'); const d = map.get(id); if(!d) return;
+        sp.textContent = formatPct2(d.price_change_percentage_24h);
+      });
+    }catch(e){ console.warn('updateVisiblePricesHome', e); }
+  }
+  const onRRRefreshHome = () => updateVisiblePricesHome();
+  window.addEventListener('rr:refresh', onRRRefreshHome);
+  el.addEventListener('rr:teardown', () => window.removeEventListener('rr:refresh', onRRRefreshHome));
+
   return el;
 
 }

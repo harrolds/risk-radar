@@ -1,3 +1,4 @@
+import { formatPriceEUR, formatPct2 } from '../utils/format.js';
 import { isInWatchlist, toggleWatchlist } from '../data/watchlist.js';
 import { RiskGauge } from '../components/RiskGauge.js';
 import { IndicatorCard } from '../components/IndicatorCard.js';
@@ -30,7 +31,7 @@ export function renderCoinDetailPage({ id }){
   const star=el.querySelector('#rr-detail-star');
   if(star){ const sync=()=>{const a=isInWatchlist(id); star.textContent=a?'★ In watchlist':'☆ Watch'; star.classList.toggle('active',a);}; sync(); star.addEventListener('click',e=>{e.preventDefault(); toggleWatchlist(id); sync();}); }
   const cmp=el.querySelector('#rr-compare'); if(cmp){ cmp.addEventListener('click',e=>{e.preventDefault(); location.hash=`#/compare?base=${id}`; }); }
-  fetchPriceOrFallback({ coinId: id, vsCurrency: COINGECKO.VS_CURRENCY }).then(p=>{const t=el.querySelector('#rr-head-price'); if(t) t.textContent=p!=null? new Intl.NumberFormat('nl-NL',{style:'currency',currency:COINGECKO.VS_CURRENCY.toUpperCase()}).format(p):'—';}).catch(()=>{});
+  fetchPriceOrFallback({ coinId: id, vsCurrency: COINGECKO.VS_CURRENCY }).then(p=>{ const t=el.querySelector('#rr-head-price'); if(t) t.textContent = formatPriceEUR(p); if(t) t.textContent=p!=null? new Intl.NumberFormat('nl-NL',{style:'currency',currency:COINGECKO.VS_CURRENCY.toUpperCase()}).format(p):'—';}).catch(()=>{});
 
   const hero=el.querySelector('#rr-hero'); const grid=el.querySelector('#rr-indicators');
   (async()=>{
@@ -58,5 +59,23 @@ export function renderCoinDetailPage({ id }){
   })();
 
   const predWrap=el.querySelector('#rr-predict-wrap'); if(predWrap) predWrap.appendChild(PredictionBlock({coinId:id}));
+  
+  // Incremental update for detail price
+  async function updateDetailPrice(){
+    try{
+      const fresh = await fetch(`${COINGECKO.CG_PROXY}?endpoint=simple_price&ids=${encodeURIComponent(id)}&vs_currencies=${encodeURIComponent(COINGECKO.VS_CURRENCY)}&_t=${Date.now()}`, { cache:'no-store' });
+      if(!fresh.ok) return;
+      const j = await fresh.json();
+      const val = j?.[id]?.[COINGECKO.VS_CURRENCY];
+      if (val != null) {
+        const t = el.querySelector('#rr-head-price');
+        if (t) t.textContent = formatPriceEUR(val);
+      }
+    }catch(e){}
+  }
+  const onRRRefreshDetail = () => updateDetailPrice();
+  window.addEventListener('rr:refresh', onRRRefreshDetail);
+  el.addEventListener('rr:teardown', () => window.removeEventListener('rr:refresh', onRRRefreshDetail));
+
   return el;
 }

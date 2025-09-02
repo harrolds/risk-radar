@@ -76,3 +76,24 @@ export async function fetchTrending() {
   const ids = (data?.coins || []).map(x => x?.item?.id).filter(Boolean);
   return ids;
 }
+
+/** Fetch markets for specific coin IDs (batch) */
+export async function fetchMarketsByIds(ids = []){
+  if (!ids || ids.length === 0) return [];
+  const url = new URL(`${baseUrl()}/coins/markets`);
+  url.searchParams.set("vs_currency", COINGECKO.VS_CURRENCY);
+  url.searchParams.set("ids", ids.join(","));
+  url.searchParams.set("price_change_percentage", "24h");
+  url.searchParams.set("_t", Date.now());
+  const res = await fetch(url.toString(), { headers: authHeaders(), cache: "no-store" });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`HTTP ${res.status} @ /coins/markets(ids) :: ${text.slice(0,180)}`);
+  }
+  const data = await res.json();
+  return data.map(x => ({
+    id: x.id,
+    current_price: x.current_price,
+    price_change_percentage_24h: x.price_change_percentage_24h,
+  }));
+}
