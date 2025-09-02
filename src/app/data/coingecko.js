@@ -1,5 +1,11 @@
 import { COINGECKO } from "../config.js";
 
+function _proxyBase(){
+  const p = COINGECKO.CG_PROXY || '/.netlify/functions/cg';
+  try { return new URL(p, window.location.origin).toString(); }
+  catch(e){ return (window.location.origin || '') + '/.netlify/functions/cg'; }
+}
+
 // Simple session cache with TTL
 function cacheGet(key) {
   try {
@@ -36,7 +42,7 @@ async function _request(url) {
 
 /** Markets (paginated) used on Coins page and Home enrich */
 export async function fetchCoinsMarkets({ page = 1, perPage = 250, order = 'market_cap_desc', ids = null } = {}){
-  const u = new URL(`${COINGECKO.CG_PROXY}`);
+  const u = new URL(_proxyBase());
   u.searchParams.set('endpoint', 'coins_markets');
   u.searchParams.set('vs_currency', COINGECKO.VS_CURRENCY);
   u.searchParams.set('order', order);
@@ -65,7 +71,7 @@ export async function fetchCoinsMarkets({ page = 1, perPage = 250, order = 'mark
 
 /** Trending returns array of coin IDs */
 export async function fetchTrending(){
-  const u = new URL(`${COINGECKO.CG_PROXY}`);
+  const u = new URL(_proxyBase());
   u.searchParams.set('endpoint', 'search_trending');
   u.searchParams.set('_t', String(Date.now()));
   const cacheKey = 'tr:' + u.toString();
@@ -81,7 +87,7 @@ export async function fetchTrending(){
 /** Batch markets by IDs (used for incremental refresh) */
 export async function fetchMarketsByIds(ids = []){
   if (!ids || !ids.length) return [];
-  const u = new URL(`${COINGECKO.CG_PROXY}`);
+  const u = new URL(_proxyBase());
   u.searchParams.set('endpoint', 'coins_markets');
   u.searchParams.set('vs_currency', COINGECKO.VS_CURRENCY);
   u.searchParams.set('ids', ids.join(','));
