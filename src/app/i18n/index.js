@@ -42,6 +42,11 @@ const DICTS = {
     ,"footer.copy": "© {year} RiskRadar"
     ,"footer.phase": "UI-baseline + thema"
     ,"coins.title": "Coins"
+    ,"search.placeholder.long": "Zoek op naam of symbool (bijv. BTC, ETH, DOGE)..."
+    ,"pred.tab.24h": "24u"
+    ,"pred.tab.7d": "7d"
+    ,"pred.tab.30d": "30d"
+    ,"pred.result": "Verwachte prijs (+-) voor {period}"
   },
   de: {
     "app.title": "RiskRadar",
@@ -85,6 +90,11 @@ const DICTS = {
     ,"footer.copy": "© {year} RiskRadar"
     ,"footer.phase": "UI-Baseline + Thema"
     ,"coins.title": "Coins"
+    ,"search.placeholder.long": "Nach Name oder Symbol suchen (z. B. BTC, ETH, DOGE)…"
+    ,"pred.tab.24h": "24h"
+    ,"pred.tab.7d": "7T"
+    ,"pred.tab.30d": "30T"
+    ,"pred.result": "Erwarteter Preis (+-) für {period}"
   },
   en: {
     "app.title": "RiskRadar",
@@ -128,6 +138,11 @@ const DICTS = {
     ,"footer.copy": "© {year} RiskRadar"
     ,"footer.phase": "UI baseline + theme"
     ,"coins.title": "Coins"
+    ,"search.placeholder.long": "Search by name or symbol (e.g. BTC, ETH, DOGE)..."
+    ,"pred.tab.24h": "24h"
+    ,"pred.tab.7d": "7d"
+    ,"pred.tab.30d": "30d"
+    ,"pred.result": "Expected price (+-) for {period}"
   }
 };
 

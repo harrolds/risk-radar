@@ -27,27 +27,23 @@ export function PredictionBlock({ coinId }){
   el.className = 'rr-card rr-predict';
   el.innerHTML = `
     <div class="rr-pred-head">
-      <div class="rr-pred-title">${t('pred.title').replace('{range}', '').replace('{hours}', 24)}</div>
       <div class="rr-pred-tabs">
-        <button class="active" data-h="1">1h</button>
-        <button data-h="4">4h</button>
-        <button data-h="24">24h</button>
+        <button class="active" data-p="24h">${t('pred.tab.24h')}</button>
+        <button data-p="7d">${t('pred.tab.7d')}</button>
+        <button data-p="30d">${t('pred.tab.30d')}</button>
       </div>
     </div>
-    <div class="rr-pred-result rr-subtle">${t('pred.obs')}</div>
+    <div class="rr-pred-result rr-subtle">${t('pred.obs')}</div rr-subtle">${t('pred.obs')}</div>
   `;
 
   const res = el.querySelector('.rr-pred-result');
   const tabs = Array.from(el.querySelectorAll('.rr-pred-tabs button'));
 
-  function rangeLabel(){
-    const sel = el.querySelector('.rr-pred-tabs .active');
-    return sel ? sel.textContent : '';
-  }
+  function rangeLabel(){ const sel = el.querySelector('.rr-pred-tabs .active'); return sel? sel.textContent : ''; }
 
-  async function load(h){
+  async function load(period){
     try{
-      const days = Math.max(1, Math.ceil(h/24));
+            const days = period==='24h' ? 1 : (period==='7d' ? 7 : 30);
       const currentPrice = await fetchPriceOrFallback({ coinId });
       const candles = await fetchOHLC({ coinId, days });
       const closes = (candles||[]).map(c=>c.close).slice(-30);
@@ -58,9 +54,7 @@ export function PredictionBlock({ coinId }){
       let high = (currentPrice||0) * factor;
       [low, high] = ascendingPair(low, high);
 
-      const title = t('pred.title')
-        .replace('{range}', rangeLabel())
-        .replace('{hours}', h);
+            const title = t('pred.result').replace('{period}', rangeLabel());
 
       res.innerHTML = `<div><strong>${dir}</strong></div>
         <div class="rr-conf-bar"><div style="width:${conf}%"></div></div>
@@ -75,10 +69,10 @@ export function PredictionBlock({ coinId }){
   tabs.forEach(btn => btn.addEventListener('click', () => {
     tabs.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    load(parseInt(btn.dataset.h,10));
+    load(btn.dataset.p);
   }));
 
   // initial
-  load(1);
+  load('24h');
   return el;
 }

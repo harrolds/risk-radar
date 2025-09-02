@@ -23,8 +23,8 @@ export function renderHomePage() {
   const search = document.createElement('div');
   search.className = 'rr-search';
   search.innerHTML = `
-    <input id="rr-home-q" type="text" placeholder="Zoek op naam of symbool (bijv. BTC, ETH, DOGE)…" aria-label="Zoek coin" />
-    <button id="rr-home-clear" type="button" title="Wis zoekopdracht">Wis</button>
+    <input id="rr-home-q" type="text" placeholder="${t('search.placeholder.long')}" aria-label="Zoek coin" />
+    <button id="rr-home-clear" type="button" title="Wis zoekopdracht">${t('search.clear')}</button>
   `;
   el.appendChild(search);
 
