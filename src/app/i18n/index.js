@@ -33,6 +33,15 @@ const DICTS = {
     ,"pred.obs": "Geobserveerde trend"
     ,"pred.lastpoints": "Laatste 30 datapoints"
     ,"pred.loadfail": "Kon voorspelling niet laden"
+    ,"router.compare.title": "Vergelijk"
+    ,"router.compare.body": "Vergelijk-functionaliteit wordt in een latere fase geactiveerd."
+    ,"router.portfolio.title": "Portfolio"
+    ,"router.portfolio.body": "Portfolio wordt later toegevoegd."
+    ,"router.pro.title": "RiskRadar Pro"
+    ,"router.pro.body": "Upgrade-flow komt in Fase 7 (Predict Pro)."
+    ,"footer.copy": "© {year} RiskRadar"
+    ,"footer.phase": "UI-baseline + thema"
+    ,"coins.title": "Coins"
   },
   de: {
     "app.title": "RiskRadar",
@@ -67,6 +76,15 @@ const DICTS = {
     ,"pred.obs": "Beobachteter Trend"
     ,"pred.lastpoints": "Letzte 30 Datenpunkte"
     ,"pred.loadfail": "Vorhersage konnte nicht geladen werden"
+    ,"router.compare.title": "Vergleichen"
+    ,"router.compare.body": "Die Vergleichsfunktion wird in einer späteren Phase aktiviert."
+    ,"router.portfolio.title": "Portfolio"
+    ,"router.portfolio.body": "Portfolio wird später hinzugefügt."
+    ,"router.pro.title": "RiskRadar Pro"
+    ,"router.pro.body": "Der Upgrade-Flow kommt in Phase 7 (Predict Pro)."
+    ,"footer.copy": "© {year} RiskRadar"
+    ,"footer.phase": "UI-Baseline + Thema"
+    ,"coins.title": "Coins"
   },
   en: {
     "app.title": "RiskRadar",
@@ -101,6 +119,15 @@ const DICTS = {
     ,"pred.obs": "Observed trend"
     ,"pred.lastpoints": "Last 30 datapoints"
     ,"pred.loadfail": "Could not load prediction"
+    ,"router.compare.title": "Compare"
+    ,"router.compare.body": "Compare will be enabled in a later phase."
+    ,"router.portfolio.title": "Portfolio"
+    ,"router.portfolio.body": "Portfolio will be added later."
+    ,"router.pro.title": "RiskRadar Pro"
+    ,"router.pro.body": "Upgrade flow arrives in Phase 7 (Predict Pro)."
+    ,"footer.copy": "© {year} RiskRadar"
+    ,"footer.phase": "UI baseline + theme"
+    ,"coins.title": "Coins"
   }
 };
 

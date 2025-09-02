@@ -1,3 +1,4 @@
+import { t } from './i18n/index.js';
 import { renderHomePage } from './pages/Home/index.js';
 import { renderCoinsPage } from './pages/Coins/index.js';
 import { renderSettingsPage } from './pages/Settings/index.js';
@@ -37,9 +38,9 @@ export function initRouter({ mount }) {
       case 'coins': view = renderCoinsPage(); break;
       case 'coinDetail': view = renderCoinDetailPage(params); break;
       case 'settings': view = renderSettingsPage(); break;
-      case 'compare': view = simplePage('Vergelijk', '<p class="rr-subtle">Vergelijk-functionaliteit wordt in Fase 4 geactiveerd.</p>'); break;
-      case 'portfolio': view = simplePage('Portfolio', '<p class="rr-subtle">Portfolio wordt later toegevoegd.</p>'); break;
-      case 'pro': view = simplePage('RiskRadar Pro', '<p class="rr-subtle">Upgrade-flow komt in Fase 7 (Predict Pro).</p>'); break;
+      case 'compare': view = simplePage(t('router.compare.title'), `<p class="rr-subtle">${t('router.compare.body')}</p>`); break;
+      case 'portfolio': view = simplePage(t('router.portfolio.title'), `<p class="rr-subtle">${t('router.portfolio.body')}</p>`); break;
+      case 'pro': view = simplePage(t('router.pro.title'), `<p class="rr-subtle">${t('router.pro.body')}</p>`); break;
       default: view = notFound();
     }
     mount.appendChild(view);

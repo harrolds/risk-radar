@@ -1,3 +1,4 @@
+import { t } from '../i18n/index.js';
 import { RiskGauge } from './RiskGauge.js';
 const iconMap = {
   rsi: '<svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M4 12c2-4 6-4 8 0s6 4 8 0"/></svg>',

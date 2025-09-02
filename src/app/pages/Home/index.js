@@ -140,7 +140,7 @@ export function renderHomePage() {
   const tip = document.createElement('p');
   tip.className = 'rr-subtle';
   tip.style.marginTop = '8px';
-  tip.textContent = '${t('home.tip')}';
+  tip.textContent = t('home.tip');
   
   // Watchlist section
   const wlCard = document.createElement('div');

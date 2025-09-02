@@ -1,3 +1,4 @@
+import { t } from '../../i18n/index.js';
 import { formatPriceEUR, formatPct2 } from '../../utils/format.js';
 import { isInWatchlist, toggleWatchlist } from '../../data/watchlist.js';
 import { RiskGauge } from '../../components/RiskGauge.js';

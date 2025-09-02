@@ -1,3 +1,4 @@
+import { t } from './i18n/index.js';
 import { COINGECKO } from "../config.js";
 import { fetchOHLC } from "./ohlcService.js";
 

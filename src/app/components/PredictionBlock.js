@@ -17,9 +17,9 @@ function trendScore(closes){
   const slope = den ? num/den : 0;
   const rel = meanY ? slope/meanY : 0;
   const score = rel * 1000;
-  let dir='Zijwaarts';
-  if (score > 0.5) dir = 'Stijgend';
-  else if (score < -0.5) dir = 'Dalend';
+  let dir=${t('trend.flat')};
+  if (score > 0.5) dir = ${t('trend.up')};
+  else if (score < -0.5) dir = ${t('trend.down')};
   const conf = Math.min(100, Math.max(0, Math.round(Math.abs(score*50))));
   return { dir, conf };
 }
@@ -53,7 +53,7 @@ export function PredictionBlock({ coinId }){
     try{
       const candles = await fetchOHLC({ coinId, days });
       const closes = candles.map(c => c.close).filter(v => typeof v === 'number' && isFinite(v));
-      if (!closes.length) { res.textContent = 'Onvoldoende data'; return; }
+      if (!closes.length) { res.textContent = ${t('trend.insufficient')}; return; }
 
       const { dir, conf } = trendScore(closes);
 
@@ -81,15 +81,15 @@ export function PredictionBlock({ coinId }){
       let high = currentPrice * factor;
 
       // Subtiele nudge richting trend (beide kanten evenredig verkleinen)
-      if (dir === 'Stijgend'){ low /= 0.9; high *= 0.9; }
-      else if (dir === 'Dalend'){ low /= 0.9; high *= 0.9; [low, high] = [low*1.02, high*0.98]; }
+      if (dir === ${t('trend.up')}){ low /= 0.9; high *= 0.9; }
+      else if (dir === ${t('trend.down')}){ low /= 0.9; high *= 0.9; [low, high] = [low*1.02, high*0.98]; }
 
       // **Altijd** in oplopende volgorde weergeven
       [low, high] = ascendingPair(low, high);
 
       res.innerHTML = `<div><strong>${dir}</strong></div>
         <div class="rr-conf-bar"><div style="width:${conf}%"></div></div>
-        <div class="rr-subtle" style="margin-top:8px;">Verwachte prijs (±1σ) voor ${labelForDays(days)}: 
+        <div class="rr-subtle" style="margin-top:8px;">${t('pred.title').replace('{range}', sel ? sel.textContent : '').replace('{hours}', h)} (±1σ) voor ${labelForDays(days)}: 
           <strong>${formatPriceEUR(low)}</strong> tot <strong>${formatPriceEUR(high)}</strong></div>`;
     }catch(e){
       console.warn('PredictionBlock load error', e);
