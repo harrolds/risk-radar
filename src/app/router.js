@@ -1,7 +1,7 @@
-import { renderHomePage } from './HomePage/index.js';
-import { renderCoinsPage } from './CoinsPage/index.js';
-import { renderSettingsPage } from './SettingsPage/index.js';
-import { renderCoinDetailPage } from './CoinDetailPage/index.js';
+import { renderHomePage } from './pages/Home/index.js';
+import { renderCoinsPage } from './pages/Coins/index.js';
+import { renderSettingsPage } from './pages/Settings/index.js';
+import { renderCoinDetailPage } from './pages/CoinDetail/index.js';
 
 export function initRouter({ mount }) {
   function parse(hash) {
