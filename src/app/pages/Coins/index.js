@@ -23,7 +23,7 @@ export function renderCoinsPage() {
   const search = document.createElement('div');
   search.className = 'rr-search';
   search.innerHTML = `
-    <input id="rr-coins-q" type="text" placeholder=${t('search.placeholder')} aria-label=${t('search.placeholder')} />
+    <input id="rr-coins-q" type="text" placeholder="${t('search.placeholder')}" aria-label="${t('search.placeholder')}" />
     <button id="rr-coins-clear" type="button">${t('search.clear')}</button>
   `;
   el.appendChild(search);

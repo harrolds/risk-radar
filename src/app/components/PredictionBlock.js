@@ -17,9 +17,9 @@ function trendScore(closes){
   const slope = den ? num/den : 0;
   const rel = meanY ? slope/meanY : 0;
   const score = rel * 1000;
-  let dir=${t('trend.flat')};
-  if (score > 0.5) dir = ${t('trend.up')};
-  else if (score < -0.5) dir = ${t('trend.down')};
+  let dir=t('trend.flat');
+  if (score > 0.5) dir = t('trend.up');
+  else if (score < -0.5) dir = t('trend.down');
   const conf = Math.min(100, Math.max(0, Math.round(Math.abs(score*50))));
   return { dir, conf };
 }
@@ -53,7 +53,7 @@ export function PredictionBlock({ coinId }){
     try{
       const candles = await fetchOHLC({ coinId, days });
       const closes = candles.map(c => c.close).filter(v => typeof v === 'number' && isFinite(v));
-      if (!closes.length) { res.textContent = ${t('trend.insufficient')}; return; }
+      if (!closes.length) { res.textContent = t('trend.insufficient'); return; }
 
       const { dir, conf } = trendScore(closes);
 
@@ -81,8 +81,8 @@ export function PredictionBlock({ coinId }){
       let high = currentPrice * factor;
 
       // Subtiele nudge richting trend (beide kanten evenredig verkleinen)
-      if (dir === ${t('trend.up')}){ low /= 0.9; high *= 0.9; }
-      else if (dir === ${t('trend.down')}){ low /= 0.9; high *= 0.9; [low, high] = [low*1.02, high*0.98]; }
+      if (dir === t('trend.up')){ low /= 0.9; high *= 0.9; }
+      else if (dir === t('trend.down')){ low /= 0.9; high *= 0.9; [low, high] = [low*1.02, high*0.98]; }
 
       // **Altijd** in oplopende volgorde weergeven
       [low, high] = ascendingPair(low, high);
