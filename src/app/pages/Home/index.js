@@ -9,7 +9,8 @@ export function renderHomePage() {
   // Title
   const title = document.createElement('h1');
   title.className = 'rr-title';
-  title.textContent = 'RiskRadar';
+  import { t } from '../../i18n/index.js';
+  title.textContent = t('app.title');
   el.appendChild(title);
 
   // Intro card (keeps existing friendly intro)
