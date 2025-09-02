@@ -1,9 +1,10 @@
+import { t } from '../i18n/index.js';
 import { formatPriceEUR } from '../utils/format.js';
 import { fetchPriceOrFallback } from '../data/priceService.js';
 import { fetchOHLC } from '../data/ohlcService.js';
 
 function trendScore(closes){
-  if (!closes || closes.length < 8) return { dir: 'Onvoldoende data', conf: 0 };
+  if (!closes || closes.length < 8) return { dir: t('trend.insufficient'), conf: 0 };
   const n = closes.length;
   const xs = Array.from({length:n}, (_,i)=>i);
   const meanX = xs.reduce((a,b)=>a+b,0)/n;
@@ -92,7 +93,7 @@ export function PredictionBlock({ coinId }){
           <strong>${formatPriceEUR(low)}</strong> tot <strong>${formatPriceEUR(high)}</strong></div>`;
     }catch(e){
       console.warn('PredictionBlock load error', e);
-      res.textContent = 'Kon voorspelling niet laden';
+      res.textContent = t('pred.loadfail');
     }
   }
 

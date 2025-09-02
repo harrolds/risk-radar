@@ -36,7 +36,7 @@ function mountBottom(){
 }
 
 // Router
-const router = initRouter({ mount: mainMount });
+initRouter({ mount: mainMount });
 
 function rerender(){
   // Rebuild header (needed for language labels)
@@ -68,6 +68,6 @@ window.addEventListener('rr:locale', rerender);
 
 // Initial mount
 mountHeader();
-router.boot();
+
 mountFooter();
 mountBottom();

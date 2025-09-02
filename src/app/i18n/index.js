@@ -20,6 +20,19 @@ const DICTS = {
     "coins.tabs.all": "Alle coins",
     "coins.tabs.gainers": "Stijgers",
     "coins.tabs.losers": "Dalers"
+    ,"home.intro": "Zoek direct naar een coin. Klik op een resultaat voor details."
+    ,"home.search.placeholder.long": "Zoek op naam of symbool (bijv. BTC, ETH, DOGE)..."
+    ,"home.search.type": "Typ om te zoeken"
+    ,"watchlist.empty": "Nog geen coins in je watchlist"
+    ,"home.tip": "Tip: je kunt zoeken op naam (“bitcoin”) of symbool (“BTC”). Klik op een resultaat voor details."
+    ,"trend.up": "Stijgend"
+    ,"trend.down": "Dalend"
+    ,"trend.flat": "Zijwaarts"
+    ,"trend.insufficient": "Onvoldoende data"
+    ,"pred.title": "Verwachte prijs ({range}) voor {hours} uur:"
+    ,"pred.obs": "Geobserveerde trend"
+    ,"pred.lastpoints": "Laatste 30 datapoints"
+    ,"pred.loadfail": "Kon voorspelling niet laden"
   },
   de: {
     "app.title": "RiskRadar",
@@ -41,6 +54,19 @@ const DICTS = {
     "coins.tabs.all": "Alle Coins",
     "coins.tabs.gainers": "Gewinner",
     "coins.tabs.losers": "Verlierer"
+    ,"home.intro": "Suche direkt nach einer Coin. Klicke für Details auf ein Ergebnis."
+    ,"home.search.placeholder.long": "Nach Name oder Symbol suchen (z. B. BTC, ETH, DOGE)…"
+    ,"home.search.type": "Zum Suchen tippen"
+    ,"watchlist.empty": "Noch keine Coins in deiner Watchlist"
+    ,"home.tip": "Tipp: Du kannst nach Namen („bitcoin“) oder Symbol („BTC“) suchen. Klicke auf ein Ergebnis für Details."
+    ,"trend.up": "Steigend"
+    ,"trend.down": "Fallend"
+    ,"trend.flat": "Seitwärts"
+    ,"trend.insufficient": "Unzureichende Daten"
+    ,"pred.title": "Erwarteter Preis ({range}) für {hours} Std.:"
+    ,"pred.obs": "Beobachteter Trend"
+    ,"pred.lastpoints": "Letzte 30 Datenpunkte"
+    ,"pred.loadfail": "Vorhersage konnte nicht geladen werden"
   },
   en: {
     "app.title": "RiskRadar",
@@ -62,6 +88,19 @@ const DICTS = {
     "coins.tabs.all": "All coins",
     "coins.tabs.gainers": "Gainers",
     "coins.tabs.losers": "Losers"
+    ,"home.intro": "Search directly for a coin. Click a result for details."
+    ,"home.search.placeholder.long": "Search by name or symbol (e.g. BTC, ETH, DOGE)..."
+    ,"home.search.type": "Type to search"
+    ,"watchlist.empty": "No coins in your watchlist yet"
+    ,"home.tip": "Tip: you can search by name (“bitcoin”) or symbol (“BTC”). Click a result for details."
+    ,"trend.up": "Rising"
+    ,"trend.down": "Falling"
+    ,"trend.flat": "Sideways"
+    ,"trend.insufficient": "Insufficient data"
+    ,"pred.title": "Expected price ({range}) for {hours} hours:"
+    ,"pred.obs": "Observed trend"
+    ,"pred.lastpoints": "Last 30 datapoints"
+    ,"pred.loadfail": "Could not load prediction"
   }
 };
 

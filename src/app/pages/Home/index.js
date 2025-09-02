@@ -16,7 +16,7 @@ export function renderHomePage() {
   // Intro card (keeps existing friendly intro)
   const intro = document.createElement('div');
   intro.className = 'rr-card';
-  intro.innerHTML = `<p>Zoek direct naar een coin. Klik op een resultaat voor details.</p>`;
+  intro.innerHTML = `<p>${t('home.intro')}</p>`;
   el.appendChild(intro);
 
   // Search area
@@ -140,12 +140,12 @@ export function renderHomePage() {
   const tip = document.createElement('p');
   tip.className = 'rr-subtle';
   tip.style.marginTop = '8px';
-  tip.textContent = 'Tip: je kunt zoeken op naam (“bitcoin”) of symbool (“BTC”). Klik op een resultaat voor details.';
+  tip.textContent = '${t('home.tip')}';
   
   // Watchlist section
   const wlCard = document.createElement('div');
   wlCard.className = 'rr-card';
-  wlCard.innerHTML = `<h2 class="rr-title" style="font-size:18px;margin:0 0 8px 0;">Watchlist</h2><ul class="rr-list" id="rr-watchlist"></ul><p id="rr-watchlist-empty" class="rr-subtle">Nog geen coins in je watchlist.</p>`;
+  wlCard.innerHTML = `<h2 class="rr-title" style="font-size:18px;margin:0 0 8px 0;">Watchlist</h2><ul class="rr-list" id="rr-watchlist"></ul><p id="rr-watchlist-empty" class="rr-subtle">${t('watchlist.empty')}.</p>`;
   el.appendChild(wlCard);
 
   const wlList = wlCard.querySelector('#rr-watchlist');
