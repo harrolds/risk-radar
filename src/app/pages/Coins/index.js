@@ -147,10 +147,10 @@ export function renderCoinsPage() {
     });
   });
 
-  let t;
+  let deb;
   qInput.addEventListener('input', () => {
-    clearTimeout(t);
-    t = setTimeout(applyFilters, 200);
+    clearTimeout(deb);
+    deb = setTimeout(applyFilters, 200);
   });
   qClear.addEventListener('click', () => {
     qInput.value = '';
