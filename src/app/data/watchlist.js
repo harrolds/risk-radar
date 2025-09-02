@@ -1,3 +1,4 @@
+import { t } from './i18n/index.js';
 // Simple watchlist storage using localStorage
 const KEY = 'rr.watchlist';
 

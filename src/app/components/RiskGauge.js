@@ -1,3 +1,4 @@
+import { t } from '../i18n/index.js';
 export function RiskGauge(score=50, variant='main'){
   const s=Math.min(100,Math.max(0,Number(score)||0));
   const color=s<=33?'var(--ok)':s<=66?'var(--warn)':'var(--danger)';

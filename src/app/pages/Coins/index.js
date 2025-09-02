@@ -1,19 +1,21 @@
+import { t } from '../../i18n/index.js';
 import { formatPriceEUR, formatPct2 } from '../../utils/format.js';
 import { fetchCoinsMarkets, fetchMarketsByIds } from '../../data/coingecko.js';
 import { isInWatchlist, toggleWatchlist } from '../../data/watchlist.js';
 
+
 export function renderCoinsPage() {
   const el = document.createElement('div');
   el.className = 'rr-page';
-  el.innerHTML = `<h1 class="rr-title">Coins</h1>`;
+  el.innerHTML = `<h1 class="rr-title">${t('coins.title')}</h1>`;
 
   // Pills (tabs) — behoud originele DOM-structuur en classes
   const pills = document.createElement('div');
   pills.className = 'rr-pills';
   pills.innerHTML = `
-    <a href="#/coins?tab=all" class="rr-pill active" data-tab="all">Alle coins</a>
-    <a href="#/coins?tab=gainers" class="rr-pill" data-tab="gainers">Stijgers</a>
-    <a href="#/coins?tab=losers" class="rr-pill" data-tab="losers">Dalers</a>
+    <a href="#/coins?tab=all" class="rr-pill active" data-tab="all">${t('coins.tabs.all')}</a>
+    <a href="#/coins?tab=gainers" class="rr-pill" data-tab="gainers">${t('coins.tabs.gainers')}</a>
+    <a href="#/coins?tab=losers" class="rr-pill" data-tab="losers">${t('coins.tabs.losers')}</a>
   `;
   el.appendChild(pills);
 
@@ -21,8 +23,8 @@ export function renderCoinsPage() {
   const search = document.createElement('div');
   search.className = 'rr-search';
   search.innerHTML = `
-    <input id="rr-coins-q" type="text" placeholder="Zoek op naam of symbool…" aria-label="Zoek coin" />
-    <button id="rr-coins-clear" type="button">Wis</button>
+    <input id="rr-coins-q" type="text" placeholder="${t('search.placeholder')}" aria-label="${t('search.placeholder')}" />
+    <button id="rr-coins-clear" type="button">${t('search.clear')}</button>
   `;
   el.appendChild(search);
 
@@ -145,10 +147,10 @@ export function renderCoinsPage() {
     });
   });
 
-  let t;
+  let deb;
   qInput.addEventListener('input', () => {
-    clearTimeout(t);
-    t = setTimeout(applyFilters, 200);
+    clearTimeout(deb);
+    deb = setTimeout(applyFilters, 200);
   });
   qClear.addEventListener('click', () => {
     qInput.value = '';

@@ -1,3 +1,4 @@
+import { t } from './i18n/index.js';
 export function SMA(values, period){const o=new Array(values.length).fill(null);if(period<=0)return o;let s=0;for(let i=0;i<values.length;i++){const v=+values[i];if(Number.isFinite(v))s+=v;if(i>=period){const old=+values[i-period];if(Number.isFinite(old))s-=old;}if(i>=period-1)o[i]=s/period;}return o;}
 export function EMA(values, period){const o=new Array(values.length).fill(null);const k=2/(period+1);let ema=null;for(let i=0;i<values.length;i++){const v=+values[i];if(!Number.isFinite(v)){o[i]=ema;continue;}ema=ema==null?v:(v-ema)*k+ema;o[i]=ema;}return o;}
 export function MACD(values,fast=12,slow=26,signal=9){const ef=EMA(values,fast), es=EMA(values,slow);const macd=values.map((_,i)=>{const a=ef[i],b=es[i];return (a==null||b==null)?null:a-b});const sig=EMA(macd.map(v=>v==null?0:v),signal).map((v,i)=>macd[i]==null?null:v);const hist=macd.map((v,i)=>(v==null||sig[i]==null)?null:v-sig[i]);return {macd:macd,signal:sig,hist};}

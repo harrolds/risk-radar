@@ -1,3 +1,4 @@
+import { t } from '../../i18n/index.js';
 import { formatPriceEUR, formatPct2 } from '../../utils/format.js';
 import { fetchCoinsMarkets, fetchTrending, fetchMarketsByIds } from '../../data/coingecko.js';
 import { getWatchlistIds, isInWatchlist, toggleWatchlist } from '../../data/watchlist.js';
@@ -9,21 +10,21 @@ export function renderHomePage() {
   // Title
   const title = document.createElement('h1');
   title.className = 'rr-title';
-  title.textContent = 'RiskRadar';
+  title.textContent = t('app.title');
   el.appendChild(title);
 
   // Intro card (keeps existing friendly intro)
   const intro = document.createElement('div');
   intro.className = 'rr-card';
-  intro.innerHTML = `<p>Zoek direct naar een coin. Klik op een resultaat voor details.</p>`;
+  intro.innerHTML = `<p>${t('home.intro')}</p>`;
   el.appendChild(intro);
 
   // Search area
   const search = document.createElement('div');
   search.className = 'rr-search';
   search.innerHTML = `
-    <input id="rr-home-q" type="text" placeholder="Zoek op naam of symbool (bijv. BTC, ETH, DOGE)…" aria-label="Zoek coin" />
-    <button id="rr-home-clear" type="button" title="Wis zoekopdracht">Wis</button>
+    <input id="rr-home-q" type="text" placeholder="${t('search.placeholder.long')}" aria-label="Zoek coin" />
+    <button id="rr-home-clear" type="button" title="Wis zoekopdracht">${t('search.clear')}</button>
   `;
   el.appendChild(search);
 
@@ -139,12 +140,12 @@ export function renderHomePage() {
   const tip = document.createElement('p');
   tip.className = 'rr-subtle';
   tip.style.marginTop = '8px';
-  tip.textContent = 'Tip: je kunt zoeken op naam (“bitcoin”) of symbool (“BTC”). Klik op een resultaat voor details.';
+  tip.textContent = t('home.tip');
   
   // Watchlist section
   const wlCard = document.createElement('div');
   wlCard.className = 'rr-card';
-  wlCard.innerHTML = `<h2 class="rr-title" style="font-size:18px;margin:0 0 8px 0;">Watchlist</h2><ul class="rr-list" id="rr-watchlist"></ul><p id="rr-watchlist-empty" class="rr-subtle">Nog geen coins in je watchlist.</p>`;
+  wlCard.innerHTML = `<h2 class="rr-title" style="font-size:18px;margin:0 0 8px 0;">Watchlist</h2><ul class="rr-list" id="rr-watchlist"></ul><p id="rr-watchlist-empty" class="rr-subtle">${t('watchlist.empty')}.</p>`;
   el.appendChild(wlCard);
 
   const wlList = wlCard.querySelector('#rr-watchlist');
