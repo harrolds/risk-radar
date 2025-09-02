@@ -2,12 +2,12 @@ import { COINGECKO } from "../config.js";
 import { fetchOHLC } from "./ohlcService.js";
 
 const _priceCache = new Map();
-const TTL_MS = 2 * 60 * 1000;
+const TTL_MS = 60 * 1000;
 
 async function _request(url) {
   let attempt = 0;
   while (true) {
-    const res = await fetch(url);
+    const res = await fetch(url, { cache: 'no-store' });
     if (res.status === 429 && attempt < 2) {
       await new Promise(r => setTimeout(r, 500 * Math.pow(2, attempt))); attempt++; continue;
     }

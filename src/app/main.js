@@ -34,6 +34,27 @@ shell.appendChild(bottomNav);
 appRoot.appendChild(shell);
 
 initRouter({ mount: main });
+startAutoRefresh();
 
 // export for SettingsPage usage
 export { applyTheme };
+
+
+// --- Auto Refresh: dispatch 'rr:refresh' every 60 seconds and on tab focus ---
+function startAutoRefresh() {
+  const isUserTyping = () => {
+    const ae = document.activeElement;
+    if (!ae) return false;
+    const tag = (ae.tagName||'').toLowerCase();
+    return tag === 'input' || tag === 'textarea' || ae.isContentEditable === true;
+  };
+  const INTERVAL_MS = 60 * 1000;
+  setInterval(() => {
+    if (!isUserTyping()) window.dispatchEvent(new CustomEvent('rr:refresh', { detail: { t: Date.now() } }));
+  }, INTERVAL_MS);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      if (!isUserTyping()) window.dispatchEvent(new CustomEvent('rr:refresh', { detail: { t: Date.now(), reason: 'visibility' } }));
+    }
+  });
+}

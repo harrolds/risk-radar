@@ -1,7 +1,7 @@
 import { COINGECKO } from "../config.js";
 
 const _cache = new Map(); // key -> { t, data, promise }
-const TTL_MS = 5 * 60 * 1000;
+const TTL_MS = 3 * 60 * 1000;
 
 function cacheKey({coinId, vsCurrency, days}) { return `${coinId}|${vsCurrency}|${days}`; }
 

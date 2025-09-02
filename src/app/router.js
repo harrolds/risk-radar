@@ -48,5 +48,6 @@ export function initRouter({ mount }) {
 
   window.addEventListener('hashchange', render);
   window.addEventListener('load', render);
+  
   render();
 }
