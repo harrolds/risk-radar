@@ -18,7 +18,7 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
-# ---------- Security baseline ----------
+# ---------- Security baseline (incl. CSP *globaal*) ----------
 [[headers]]
   for = "/*"
   [headers.values]
@@ -26,6 +26,8 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
     Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
     Permissions-Policy = "geolocation=(), microphone=(), camera=()"
+    # Baseline CSP: preview-vriendelijk (laat Netlify iFrame toe)
+    Content-Security-Policy = "default-src 'self'; frame-src 'self' https://app.netlify.com; frame-ancestors 'self' https://app.netlify.com; img-src 'self' https: data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' https:"
 
 # ---------- SPA fallback ----------
 [[redirects]]
@@ -33,14 +35,7 @@
   to = "/index.html"
   status = 200
 
-# ---------- Deploy Preview: sta Netlify UI-iframe toe ----------
-[context.deploy-preview]
-  [[context.deploy-preview.headers]]
-    for = "/*"
-    [context.deploy-preview.headers.values]
-      Content-Security-Policy = "default-src 'self'; frame-src 'self' https://app.netlify.com; frame-ancestors 'self' https://app.netlify.com; img-src 'self' https: data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' https:"
-
-# ---------- Production: strakker ----------
+# ---------- Production: strakker CSP override ----------
 [context.production]
   [[context.production.headers]]
     for = "/*"
