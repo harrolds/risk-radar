@@ -1,11 +1,21 @@
-import { t } from './i18n/index.js';
-import { COINGECKO } from "../config.js";
+// src/app/data/coingecko.js
+// CoinGecko via jouw Netlify proxy (/.netlify/functions/cg)
+// Behoudt bestaande API (functies/signatures/cache), maar gebruikt nu fetchJSON
+// met timeout + retries + backoff+jitter + 429/5xx/timeout UI-events & telemetrie.
 
-function _proxyBase(){
+import { t } from './i18n/index.js';              // blijft staan voor compat (mogelijk elders gebruikt)
+import { COINGECKO } from "../config.js";
+import { fetchJSON } from '../utils/http.js';     // ← Taak 6 util
+
+function _proxyBase() {
   const p = COINGECKO.CG_PROXY || '/.netlify/functions/cg';
   try { return new URL(p, window.location.origin).toString(); }
-  catch(e){ return (window.location.origin || '') + '/.netlify/functions/cg'; }
+  catch (e) { return (window.location.origin || '') + '/.netlify/functions/cg'; }
 }
+
+// Config (valt terug op defaults als niet in COINGECKO gedefinieerd)
+const TIMEOUT_MS = (COINGECKO && COINGECKO.TIMEOUT_MS) || 8000;
+const RETRIES    = (COINGECKO && COINGECKO.RETRIES)    || 3;
 
 // Simple session cache with TTL
 function cacheGet(key) {
@@ -21,28 +31,22 @@ function cacheSet(key, v) {
   try { sessionStorage.setItem(key, JSON.stringify({ t: Date.now(), v })); } catch {}
 }
 
-// Resilient fetch with small retry/backoff
+// Robuuste request (vervangt oude retry/backoff): nu via fetchJSON (+ timeout/retries/jitter/429)
 async function _request(url) {
-  let attempt = 0;
-  const max = 3;
-  while (true) {
-    try {
-      const res = await fetch(url, { cache: 'no-store' });
-      if (res.status === 429 && attempt < max) {
-        await new Promise(r => setTimeout(r, 400 * Math.pow(2, attempt++)));
-        continue;
-      }
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      return await res.json();
-    } catch (e) {
-      if (attempt >= max) throw e;
-      await new Promise(r => setTimeout(r, 300 * Math.pow(2, attempt++)));
-    }
-  }
+  return fetchJSON(url, {
+    timeoutMs: TIMEOUT_MS,
+    retries: RETRIES,
+    cache: 'no-store', // gelijk aan jouw oude gedrag
+  });
 }
 
 /** Markets (paginated) used on Coins page and Home enrich */
-export async function fetchCoinsMarkets({ page = 1, perPage = 250, order = 'market_cap_desc', ids = null } = {}){
+export async function fetchCoinsMarkets({
+  page = 1,
+  perPage = 250,
+  order = 'market_cap_desc',
+  ids = null
+} = {}) {
   const u = new URL(_proxyBase());
   u.searchParams.set('endpoint', 'coins_markets');
   u.searchParams.set('vs_currency', COINGECKO.VS_CURRENCY);
@@ -71,10 +75,11 @@ export async function fetchCoinsMarkets({ page = 1, perPage = 250, order = 'mark
 }
 
 /** Trending returns array of coin IDs */
-export async function fetchTrending(){
+export async function fetchTrending() {
   const u = new URL(_proxyBase());
   u.searchParams.set('endpoint', 'search_trending');
   u.searchParams.set('_t', String(Date.now()));
+
   const cacheKey = 'tr:' + u.toString();
   const cached = cacheGet(cacheKey);
   if (cached) return cached;
@@ -86,7 +91,7 @@ export async function fetchTrending(){
 }
 
 /** Batch markets by IDs (used for incremental refresh) */
-export async function fetchMarketsByIds(ids = []){
+export async function fetchMarketsByIds(ids = []) {
   if (!ids || !ids.length) return [];
   const u = new URL(_proxyBase());
   u.searchParams.set('endpoint', 'coins_markets');
