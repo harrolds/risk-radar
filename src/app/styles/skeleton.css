@@ -1,0 +1,29 @@
+/* src/app/styles/skeleton.css */
+
+/* Basis skeleton-blokken */
+.skel { position: relative; background: #e7eaef; border-radius: 6px; overflow: hidden; }
+.skel--line { height: 12px; margin: 8px 0; }
+.skel--avatar { width: 32px; height: 32px; border-radius: 50%; }
+.skel--chip { height: 20px; width: 80px; border-radius: 999px; }
+
+/* Shimmer animatie */
+.skel::after {
+  content: "";
+  position: absolute; inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.45), transparent);
+  animation: skel-shimmer 1.2s infinite;
+}
+@keyframes skel-shimmer {
+  100% { transform: translateX(100%); }
+}
+
+/* Skeleton-lijsten */
+.skel-row { display: grid; grid-template-columns: 32px 1fr auto; gap: 12px; align-items: center; padding: 10px 0; }
+.skel-col { display: flex; flex-direction: column; gap: 8px; }
+
+/* Hou animaties bescheiden voor mensen die motion willen vermijden */
+@media (prefers-reduced-motion: reduce) {
+  .skel::after { animation: none !important; }
+  * { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
+}
