@@ -1,8 +1,9 @@
+// src/app/pages/Coins/index.js
 import { t } from '../../i18n/index.js';
 import { formatPriceEUR, formatPct2 } from '../../utils/format.js';
 import { fetchCoinsMarkets, fetchMarketsByIds } from '../../data/coingecko.js';
 import { isInWatchlist, toggleWatchlist } from '../../data/watchlist.js';
-
+import { debounce } from '../../utils/debounce.js';
 
 export function renderCoinsPage() {
   const el = document.createElement('div');
@@ -28,12 +29,17 @@ export function renderCoinsPage() {
   `;
   el.appendChild(search);
 
-  // List container — behoud .rr-list classes
+  // List container
+  // Let op: wrapper met id="coins-list" toegevoegd zodat skeletons-init.js hierop kan targetten
   const listWrap = document.createElement('div');
-  listWrap.innerHTML = `<ul class="rr-list" id="rr-coins-list"></ul>`;
+  listWrap.innerHTML = `
+    <div id="coins-list">
+      <ul class="rr-list" id="rr-coins-list" aria-live="polite"></ul>
+    </div>
+  `;
   el.appendChild(listWrap);
 
-  // Status element
+  // Status element (blijft voor fallback-meldingen)
   const status = document.createElement('div');
   status.id = 'rr-coins-status';
   status.style.marginTop = '8px';
@@ -59,7 +65,6 @@ export function renderCoinsPage() {
     try { window.dispatchEvent(new CustomEvent('rr:watchlist-changed')); } catch {}
   });
 
-
   // Helpers
   const setActive = (tab) => {
     el.querySelectorAll('.rr-pill').forEach(a => {
@@ -72,15 +77,28 @@ export function renderCoinsPage() {
       const pct = c.price_change_percentage_24h ?? 0;
       const cls = pct >= 0 ? 'rr-badge pos' : 'rr-badge neg';
       const price = formatPriceEUR(c.current_price);
-    const pctTxt = formatPct2(pct);
-    return `<li>
+      const pctTxt = formatPct2(pct);
+      return `<li>
   <a href="#/coin/${c.id}" style="display:flex; justify-content:space-between; align-items:center; text-decoration:none; color:inherit;">
     <span style="display:flex; align-items:center; gap:8px;">
-          <button class="rr-star" style="background:transparent; border:none; cursor:pointer; font-size:16px; line-height:1; padding:0; position:relative; z-index:1;" data-id="${c.id}" aria-pressed="${isInWatchlist(c.id)}" title="${isInWatchlist(c.id) ? 'Verwijder uit watchlist' : 'Voeg toe aan watchlist'}" style="background:transparent; border:none; cursor:pointer; font-size:16px; line-height:1; padding:0;">${isInWatchlist(c.id) ? '★' : '☆'}</button>
-          <img src="${c.image}" alt="" width="20" height="20" style="vertical-align:middle;" />
-          <span>${c.symbol} • ${c.name}</span>
-        </span>
-    <span><span style="opacity:.8; margin-right:10px;"><span class="rr-price" data-id="${c.id}" data-field="price">${price}</span></span><span class="${cls}"><span class="rr-pct" data-id="${c.id}" data-field="pct24h">${pctTxt}</span></span></span>
+      <button class="rr-star"
+              style="background:transparent; border:none; cursor:pointer; font-size:16px; line-height:1; padding:0; position:relative; z-index:1;"
+              data-id="${c.id}"
+              aria-pressed="${isInWatchlist(c.id)}"
+              title="${isInWatchlist(c.id) ? 'Verwijder uit watchlist' : 'Voeg toe aan watchlist'}">
+        ${isInWatchlist(c.id) ? '★' : '☆'}
+      </button>
+      <img src="${c.image}" alt="" width="20" height="20" style="vertical-align:middle;" />
+      <span>${c.symbol} • ${c.name}</span>
+    </span>
+    <span>
+      <span style="opacity:.8; margin-right:10px;">
+        <span class="rr-price" data-id="${c.id}" data-field="price">${price}</span>
+      </span>
+      <span class="${cls}">
+        <span class="rr-pct" data-id="${c.id}" data-field="pct24h">${pctTxt}</span>
+      </span>
+    </span>
   </a>
 </li>`;
     }).join('');
@@ -99,7 +117,10 @@ export function renderCoinsPage() {
     if (currentTab === 'losers')  view = view.filter(c => (c.price_change_percentage_24h ?? 0) < 0);
 
     if (q) {
-      view = view.filter(c => c.name.toLowerCase().includes(q) || c.symbol.toLowerCase().includes(q));
+      view = view.filter(c =>
+        c.name.toLowerCase().includes(q) ||
+        c.symbol.toLowerCase().includes(q)
+      );
     }
     filtered = view;
     renderRows(filtered);
@@ -134,7 +155,7 @@ export function renderCoinsPage() {
     }
   })();
 
-  // Events
+  // Events: tab wissel
   el.querySelectorAll('.rr-pill').forEach(a => {
     a.addEventListener('click', (e) => {
       e.preventDefault();
@@ -142,19 +163,19 @@ export function renderCoinsPage() {
       currentTab = tab;
       setActive(tab);
       // update hash zonder volledige reroute
-      history.replaceState(null,'', `#/coins?tab=${tab}`);
+      history.replaceState(null, '', `#/coins?tab=${tab}`);
       applyFilters();
     });
   });
 
-  let deb;
-  qInput.addEventListener('input', () => {
-    clearTimeout(deb);
-    deb = setTimeout(applyFilters, 200);
-  });
+  // Events: zoekveld met debounce (300ms)
+  const onInputDebounced = debounce(() => applyFilters(), 300);
+  qInput.addEventListener('input', onInputDebounced);
+
   qClear.addEventListener('click', () => {
     qInput.value = '';
     applyFilters();
+    qInput.focus();
   });
 
   // Initial tab from URL (preserve original behavior)
@@ -164,12 +185,10 @@ export function renderCoinsPage() {
     setActive(currentTab);
   }
 
-  
   // Auto-refresh hook: reapply filters (and refetch if code supports it)
   try {
     const onRRRefresh = () => {
       try { applyFilters && applyFilters(); } catch(_e) {}
-      // Fallback: simulate clicking active tab to trigger reload if implemented that way
       try {
         const active = pills.querySelector('.rr-pill.active');
         if (active) active.click();
@@ -179,7 +198,7 @@ export function renderCoinsPage() {
     el.addEventListener('rr:teardown', () => window.removeEventListener('rr:refresh', onRRRefresh));
   } catch(_e) {}
 
-  
+  // Live bijwerken van zichtbare prijzen
   async function updateVisiblePricesCoins(){
     try{
       const spans = Array.from(el.querySelectorAll('[data-field="price"],[data-field="pct24h"]'));
@@ -208,5 +227,4 @@ export function renderCoinsPage() {
   el.addEventListener('rr:teardown', () => window.removeEventListener('rr:refresh', onRRRefreshCoins));
 
   return el;
-
 }

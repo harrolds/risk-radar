@@ -152,3 +152,9 @@ html, body { overflow-x: hidden; }
 .rr-price, .rr-pct { transition: color 0.25s ease, background-color 0.25s ease; }
 .rr-tick-up { background-color: rgba(0, 128, 0, 0.08); }
 .rr-tick-down { background-color: rgba(128, 0, 0, 0.08); }
+
+/* Minder beweging voor mensen die dat vragen */
+@media (prefers-reduced-motion: reduce) {
+  * { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
+}
+
