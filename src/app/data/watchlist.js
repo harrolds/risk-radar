@@ -113,3 +113,14 @@ export function onWatchlistChange(handler) {
 }
 // Backwards-compat alias zodat bestaande imports blijven werken:
 export { getWatchlist as getWatchlistIds };
+
+// Alleen voor debug/test in console:
+if (typeof window !== 'undefined') {
+  window.getWatchlist = getWatchlist;
+  window.addToWatchlist = addToWatchlist;
+  window.removeFromWatchlist = removeFromWatchlist;
+  window.toggleWatchlist = toggleWatchlist;
+  window.clearWatchlist = clearWatchlist;
+  window.isInWatchlist = isInWatchlist;
+}
+
