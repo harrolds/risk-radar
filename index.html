@@ -8,6 +8,24 @@
     <link rel="stylesheet" href="/src/app/styles/a11y.css">
     <link rel="stylesheet" href="/src/app/styles/skeleton.css">
 
+<!-- Base SEO (statische defaults; worden dynamisch bijgewerkt door seo-init.js) -->
+<meta name="description" content="RiskRadar — marktinzichten, trending en watchlist." />
+<meta name="robots" content="index,follow" />
+<link rel="canonical" href="/" />
+
+<!-- Open Graph (wordt dynamisch gevuld) -->
+<meta property="og:site_name" content="RiskRadar" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="RiskRadar" />
+<meta property="og:description" content="Volg crypto-markttrends, watchlist en prijzen in EUR." />
+<meta property="og:url" content="" />
+<meta property="og:locale" content="nl_NL" />
+
+<!-- Twitter (basic) -->
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="RiskRadar" />
+<meta name="twitter:description" content="Volg crypto-markttrends, watchlist en prijzen in EUR." />
+    
   </head>
   <body>
     <!-- 1) Skip-link + live-regio bovenaan -->
@@ -33,8 +51,9 @@
     <script type="module" src="/src/app/bootstrap/telemetry-init.js"></script>
     <script type="module" src="/src/app/bootstrap/a11y-init.js"></script>
     <script type="module" src="/src/app/bootstrap/async-ui-init.js"></script>
-    <script type="module" src="/src/app/bootstrap/network-feedback.js"></script>
     <script type="module" src="/src/app/bootstrap/skeletons-init.js"></script>
+    <script type="module" src="/src/app/bootstrap/network-feedback.js"></script>
+    <script type="module" src="/src/app/bootstrap/seo-init.js"></script>
     <script type="module" src="/src/app/main.js"></script>
   </body>
 </html>
