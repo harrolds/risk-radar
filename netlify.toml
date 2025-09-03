@@ -1,8 +1,8 @@
 # /netlify.toml
 
 [build]
-  publish = "dist"
-  # Pas aan als je een bundler gebruikt. Voor pure SPA zonder bundler kan dit leeg blijven.
+  publish = "." # <-- root publiceren (geen dist-build)
+  # build command niet nodig bij pure SPA zonder bundler
 
 [functions]
   node_bundler = "esbuild"
@@ -29,14 +29,13 @@
     Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
 
 # Content-Security-Policy
-# (Geïnspireerd op jouw eerdere test: laat connect-src 'self' https: toe voor functions, plus data: voor beacons)
 [[headers]]
   for = "/*"
   [headers.values]
     Content-Security-Policy = "default-src 'self'; frame-src 'self' https://app.netlify.com; frame-ancestors 'self' https://app.netlify.com; img-src 'self' https: data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' https: data:;"
 
 # ─────────────────────────────
-# Cache-control (voorbeeld)
+# Cache-control
 # ─────────────────────────────
 [[headers]]
   for = "/index.html"
