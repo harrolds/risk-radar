@@ -1,4 +1,4 @@
-import { t } from './i18n/index.js';
+import { t } from '../i18n/index.js';
 import { COINGECKO } from "../config.js";
 
 function _proxyBase(){
