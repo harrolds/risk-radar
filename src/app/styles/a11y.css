@@ -1,0 +1,46 @@
+/* src/app/styles/a11y.css */
+/* 1) Globale zichtbare focus-styles (toetsenbordvriendelijk) */
+:where(a, button, [role="button"], input, select, textarea, summary, [tabindex]:not([tabindex="-1"])):focus-visible {
+  outline: 3px solid #00c2ff;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px rgba(0,194,255,0.25);
+}
+
+/* 2) Skip-link styling: alleen zichtbaar bij focus */
+.skip-link {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  padding: .6rem .9rem;
+  background: #111;
+  color: #fff;
+  border-radius: .5rem;
+  text-decoration: none;
+  transform: translateY(-150%);
+  transition: transform .15s ease;
+  z-index: 9999;
+}
+.skip-link:focus,
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
+/* 3) Screenreader only helper */
+.sr-only,
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* 4) Live region kan onzichtbaar blijven (we tonen hem niet visueel) */
+#rr-live.sr-only { /* nothing extra, kept for clarity */ }
+
+/* 5) Minimale reset zodat outlines niet worden weggestyled */
+:focus { outline: none; } /* rely on :focus-visible boven */
