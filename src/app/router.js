@@ -52,4 +52,3 @@ export function initRouter({ mount }) {
   
   render();
 }
-function focusFirstTitle(rootEl){try{const h=rootEl?.querySelector('h1,.rr-title');if(h){h.setAttribute('tabindex','-1');h.focus();}}catch{}}

@@ -1,4 +1,5 @@
-// Watchlist storage using localStorage + dispatch events
+import { t } from './i18n/index.js';
+// Simple watchlist storage using localStorage
 const KEY = 'rr.watchlist';
 
 function readStore() {
@@ -13,13 +14,12 @@ function writeStore(arr) {
   try { localStorage.setItem(KEY, JSON.stringify(arr)); } catch {}
 }
 
-export function getWatchlist() {
+export function getWatchlistIds() {
   return readStore();
 }
 
 export function isInWatchlist(id) {
-  const set = new Set(readStore());
-  return set.has(id);
+  return readStore().includes(id);
 }
 
 export function addToWatchlist(id) {

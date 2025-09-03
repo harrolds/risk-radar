@@ -152,8 +152,3 @@ html, body { overflow-x: hidden; }
 .rr-price, .rr-pct { transition: color 0.25s ease, background-color 0.25s ease; }
 .rr-tick-up { background-color: rgba(0, 128, 0, 0.08); }
 .rr-tick-down { background-color: rgba(128, 0, 0, 0.08); }
-
-/* A11y additions: visible focus and skip link */
-:focus{outline:2px solid currentColor;outline-offset:2px;}
-.rr-skip{position:absolute;left:-9999px;}
-.rr-skip:focus{position:absolute;left:1rem;top:1rem;background:#fff;color:#111;z-index:9999;padding:.5rem;border-radius:.5rem;}

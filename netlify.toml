@@ -1,8 +1,10 @@
+# Netlify configuration with context-specific headers
 [build]
   publish = "."
   functions = "netlify/functions"
 
-# Caching headers
+# ---------- Default (applies to all contexts) ----------
+# Caching
 [[headers]]
   for = "/index.html"
   [headers.values]
@@ -18,7 +20,7 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
-# Security headers (start relaxed; maak later strenger indien gewenst)
+# Security (baseline; stricter in prod if desired)
 [[headers]]
   for = "/*"
   [headers.values]
@@ -26,10 +28,24 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "geolocation=(), microphone=(), camera=()"
     Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
-    Content-Security-Policy = "default-src 'self'; img-src 'self' https: data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' https:"
 
-# SPA fallback (NIET proberen /.netlify/functions/* te matchen; dat is niet toegestaan en ook niet nodig)
+# SPA fallback
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+
+# ---------- Deploy Preview ONLY: allow embedding in Netlify UI ----------
+[context.deploy-preview]
+  # Relax CSP to allow Netlify's app to frame the site in the preview UI
+  [[context.deploy-preview.headers]]
+    for = "/*"
+    [context.deploy-preview.headers.values]
+      Content-Security-Policy = "default-src 'self'; frame-src 'self' https://app.netlify.com; frame-ancestors 'self' https://app.netlify.com; img-src 'self' https: data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' https:"
+
+# ---------- Production: stricter CSP (no embedding) ----------
+[context.production]
+  [[context.production.headers]]
+    for = "/*"
+    [context.production.headers.values]
+      Content-Security-Policy = "default-src 'self'; frame-src 'self'; frame-ancestors 'self'; img-src 'self' https: data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' https:"

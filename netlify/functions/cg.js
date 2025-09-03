@@ -1,11 +1,5 @@
-// Netlify Function: CoinGecko proxy (CommonJS)
-const ALLOWED = new Set([
-  'coins/markets',
-  'search/trending',
-  'coins/%ID%',
-  'coins/%ID%/ohlc'
-]);
 
+// Netlify Function: CoinGecko proxy (CommonJS)
 exports.handler = async function(event, context) {
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -17,37 +11,44 @@ exports.handler = async function(event, context) {
   }
   try {
     const params = event.queryStringParameters || {};
-    const endpoint = params.endpoint || '';
-    const vs = params.vs_currency || 'eur';
-    const id = params.id || '';
-
+    const endpoint = params.endpoint;
     const base = process.env.CG_BASE || 'https://api.coingecko.com/api/v3';
-    const proBase = process.env.CG_PRO_BASE || 'https://pro-api.coingecko.com/api/v3';
-    const usePro = !!process.env.CG_API_KEY && (params.pro === '1' || params.pro === 'true');
-    const apiBase = usePro ? proBase : base;
 
-    let url;
-    if (endpoint === 'coins/markets') {
-      const per_page = Number(params.per_page || 50);
-      const page = Number(params.page || 1);
-      url = `${apiBase}/coins/markets?vs_currency=${encodeURIComponent(vs)}&order=market_cap_desc&per_page=${per_page}&page=${page}&sparkline=false&price_change_percentage=24h`;
-    } else if (endpoint === 'search/trending') {
-      url = `${apiBase}/search/trending`;
-    } else if (endpoint === 'coins/%ID%') {
-      if (!id) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing id' }) };
-      url = `${apiBase}/coins/${encodeURIComponent(id)}?localization=false&tickers=false&community_data=false&developer_data=false`;
-    } else if (endpoint === 'coins/%ID%/ohlc') {
-      if (!id) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing id' }) };
-      const days = Number(params.days || 1);
-      url = `${apiBase}/coins/${encodeURIComponent(id)}/ohlc?vs_currency=${encodeURIComponent(vs)}&days=${days}`;
-    } else {
-      return { statusCode: 400, headers, body: JSON.stringify({ error: 'Unsupported endpoint' }) };
+    let url = null;
+
+    if (endpoint === 'simple_price') {
+      const ids = encodeURIComponent(params.ids || '');
+      const vs = encodeURIComponent(params.vs_currencies || 'eur');
+      url = `${base}/simple/price?ids=${ids}&vs_currencies=${vs}`;
+    }
+    else if (endpoint === 'coins_markets') {
+      const u = new URL(`${base}/coins/markets`);
+      if (params.vs_currency) u.searchParams.set('vs_currency', params.vs_currency);
+      if (params.order) u.searchParams.set('order', params.order);
+      if (params.per_page) u.searchParams.set('per_page', params.per_page);
+      if (params.page) u.searchParams.set('page', params.page);
+      if (params.ids) u.searchParams.set('ids', params.ids);
+      if (params.price_change_percentage) u.searchParams.set('price_change_percentage', params.price_change_percentage);
+      url = u.toString();
+    }
+    else if (endpoint === 'search_trending') {
+      url = `${base}/search/trending`;
+    }
+    else if (endpoint === 'ohlc') {
+      // id=<coinId>&vs_currency=eur&days=1|7|30
+      const id = encodeURIComponent(params.id || '');
+      const vs = encodeURIComponent(params.vs_currency || 'eur');
+      const days = encodeURIComponent(params.days || '1');
+      url = `${base}/coins/${id}/ohlc?vs_currency=${vs}&days=${days}`;
+    }
+    else {
+      return { statusCode: 400, headers, body: JSON.stringify({ error: 'Unknown endpoint' }) };
     }
 
     const extraHeaders = {};
     if (process.env.CG_API_KEY) {
-      if (usePro) extraHeaders['x-cg-pro-api-key'] = process.env.CG_API_KEY;
-      else extraHeaders['x-cg-demo-api-key'] = process.env.CG_API_KEY;
+      // Use demo key header by default; adjust if using PRO endpoint
+      extraHeaders['x-cg-demo-api-key'] = process.env.CG_API_KEY;
     }
 
     const resp = await fetch(url, { headers: extraHeaders });
