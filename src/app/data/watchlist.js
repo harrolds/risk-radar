@@ -111,3 +111,5 @@ export function onWatchlistChange(handler) {
   try { handler(readStore()); } catch {}
   return () => window.removeEventListener(WATCHLIST_EVENT, fn);
 }
+// Backwards-compat alias zodat bestaande imports blijven werken:
+export { getWatchlist as getWatchlistIds };
