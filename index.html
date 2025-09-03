@@ -8,22 +8,29 @@
     <link rel="stylesheet" href="/src/app/styles/a11y.css">
   </head>
   <body>
-  
-  <a class="skip-link" href="#rr-main">Direct naar hoofdinhoud</a>
-  <div id="rr-live" class="sr-only" aria-live="polite" aria-atomic="true"></div>
-  <main id="rr-main" role="main" tabindex="-1"></main>
-  
-  <div class="rr-shell">
-  <div id="rr-header"></div>
-  <main id="rr-main"></main>
-  <div id="rr-footer"></div>
-  <div id="rr-bottomnav"></div>
-  </div>
+    <!-- 1) Skip-link + live-regio bovenaan -->
+    <a class="skip-link" href="#rr-main">Direct naar hoofdinhoud</a>
+    <div id="rr-live" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 
-    <div id="rr-app"></div>
+    <!-- 2) Shell met header, main, footer, bottomnav -->
+    <div class="rr-shell">
+      <!-- Laat als <div> staan om bestaande CSS niet te breken; voeg wel rollen toe -->
+      <div id="rr-header" role="banner"></div>
+
+      <!-- ENIGE main op de pagina -->
+      <main id="rr-main" role="main" tabindex="-1">
+        <!-- Hierin mount je app -->
+        <div id="rr-app"></div>
+      </main>
+
+      <div id="rr-footer" role="contentinfo"></div>
+      <nav id="rr-bottomnav" aria-label="Onderste navigatie"></nav>
+    </div>
+
+    <!-- 3) Scripts: eerst bootstraps, dan je app -->
     <script type="module" src="/src/app/bootstrap/telemetry-init.js"></script>
     <script type="module" src="/src/app/bootstrap/a11y-init.js"></script>
     <script type="module" src="/src/app/bootstrap/async-ui-init.js"></script>
-    <script type="module" src="./src/app/main.js"></script>
+    <script type="module" src="/src/app/main.js"></script>
   </body>
 </html>
