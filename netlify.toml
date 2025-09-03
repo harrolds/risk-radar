@@ -1,8 +1,8 @@
 # /netlify.toml
 
 [build]
-  publish = "." # <-- root publiceren (geen dist-build)
-  # build command niet nodig bij pure SPA zonder bundler
+  publish = "."
+  # Geen build command nodig voor pure SPA
 
 [functions]
   node_bundler = "esbuild"
@@ -17,7 +17,7 @@
   status = 200
 
 # ─────────────────────────────
-# Security headers (basis)
+# Security headers
 # ─────────────────────────────
 [[headers]]
   for = "/*"
@@ -28,15 +28,11 @@
     X-XSS-Protection = "0"
     Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
 
-# Content-Security-Policy
 [[headers]]
   for = "/*"
   [headers.values]
     Content-Security-Policy = "default-src 'self'; frame-src 'self' https://app.netlify.com; frame-ancestors 'self' https://app.netlify.com; img-src 'self' https: data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' https: data:;"
 
-# ─────────────────────────────
-# Cache-control
-# ─────────────────────────────
 [[headers]]
   for = "/index.html"
   [headers.values]
@@ -47,12 +43,15 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
-# ─────────────────────────────
-# CORS voor telemetry function
-# ─────────────────────────────
 [[headers]]
   for = "/.netlify/functions/telemetry"
   [headers.values]
     Access-Control-Allow-Origin = "*"
     Access-Control-Allow-Methods = "POST, OPTIONS"
     Access-Control-Allow-Headers = "Content-Type, X-RR-Client"
+
+# ─────────────────────────────
+# Plugin die function-deps installeert
+# ─────────────────────────────
+[[plugins]]
+  package = "@netlify/plugin-functions-install-core"
