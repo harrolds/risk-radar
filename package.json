@@ -1,0 +1,8 @@
+{
+  "name": "riskradar",
+  "private": true,
+  "version": "0.0.0",
+  "dependencies": {
+    "@netlify/blobs": "^6.5.0"
+  }
+}
