@@ -1,3 +1,5 @@
+import { initClientLogging } from './utils/logging.js';
+initClientLogging();
 // Bootstrapping app
 import { initRouter } from './router.js';
 import { Header } from './components/Header.js';
