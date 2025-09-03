@@ -1,7 +1,26 @@
 // /netlify/functions/telemetry.js
 // CommonJS Netlify Function: slaat events op als NDJSON in Netlify Blobs
+// - Ondersteunt base64 bodies (bv. via sendBeacon met Blob)
+// - Faalt niet op niet-JSON; slaat dan raw op
 
 const { getStore } = require('@netlify/blobs');
+
+function decodeBody(event) {
+  try {
+    let raw = event.body || '';
+    if (event.isBase64Encoded) {
+      raw = Buffer.from(raw, 'base64').toString('utf8');
+    }
+    // Probeer JSON, zo niet: return { __raw: string }
+    try {
+      return { parsed: JSON.parse(raw), raw: raw };
+    } catch {
+      return { parsed: null, raw: raw };
+    }
+  } catch (e) {
+    return { parsed: null, raw: '' };
+  }
+}
 
 exports.handler = async function (event) {
   // CORS & preflight
@@ -13,6 +32,7 @@ exports.handler = async function (event) {
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type, X-RR-Client',
       },
+      body: '',
     };
   }
 
@@ -25,15 +45,19 @@ exports.handler = async function (event) {
   }
 
   try {
-    const body = event.body ? JSON.parse(event.body) : {};
+    const { parsed, raw } = decodeBody(event);
     const store = getStore('telemetry');
 
+    // Server-side enrichment
+    const baseEvent = parsed || { __raw: raw || null };
     const enriched = {
-      ...body,
+      ...baseEvent,
       srv: {
         t: new Date().toISOString(),
         ip: (event.headers['x-forwarded-for'] || '').split(',')[0]?.trim() || '',
         ua: event.headers['user-agent'] || '',
+        ct: event.headers['content-type'] || '',
+        b64: Boolean(event.isBase64Encoded),
       },
     };
 
