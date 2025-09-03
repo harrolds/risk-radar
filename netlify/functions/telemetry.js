@@ -1,23 +1,26 @@
 // /netlify/functions/telemetry.js
-// CommonJS Netlify Function: slaat events op als NDJSON in Netlify Blobs
-// - Ondersteunt base64 bodies (bv. via sendBeacon met Blob)
-// - Faalt niet op niet-JSON; slaat dan raw op
+// CommonJS Netlify Function: saves events as NDJSON in Netlify Blobs
+// Robust: supports base64 (sendBeacon), tolerates non-JSON, and NEVER throws 500.
+// If Blobs fail, it logs to console and returns 202 so the UI never breaks.
 
-const { getStore } = require('@netlify/blobs');
+let getStore;
+try {
+  // Lazy require so bundling always succeeds
+  ({ getStore } = require('@netlify/blobs'));
+} catch (_) {
+  // Leave undefined -> handled below
+}
 
 function decodeBody(event) {
   try {
     let raw = event.body || '';
-    if (event.isBase64Encoded) {
-      raw = Buffer.from(raw, 'base64').toString('utf8');
-    }
-    // Probeer JSON, zo niet: return { __raw: string }
+    if (event.isBase64Encoded) raw = Buffer.from(raw, 'base64').toString('utf8');
     try {
-      return { parsed: JSON.parse(raw), raw: raw };
+      return { parsed: JSON.parse(raw), raw };
     } catch {
-      return { parsed: null, raw: raw };
+      return { parsed: null, raw };
     }
-  } catch (e) {
+  } catch {
     return { parsed: null, raw: '' };
   }
 }
@@ -44,36 +47,42 @@ exports.handler = async function (event) {
     };
   }
 
+  const { parsed, raw } = decodeBody(event);
+
+  const baseEvent = parsed || { __raw: raw || null };
+  const enriched = {
+    ...baseEvent,
+    srv: {
+      t: new Date().toISOString(),
+      ip: (event.headers['x-forwarded-for'] || '').split(',')[0]?.trim() || '',
+      ua: event.headers['user-agent'] || '',
+      ct: event.headers['content-type'] || '',
+      b64: Boolean(event.isBase64Encoded),
+      path: event.path || '',
+    },
+  };
+
+  // Try to persist to Netlify Blobs; on any error, fall back to console only.
   try {
-    const { parsed, raw } = decodeBody(event);
+    if (!getStore) throw new Error('blobs_module_unavailable');
     const store = getStore('telemetry');
-
-    // Server-side enrichment
-    const baseEvent = parsed || { __raw: raw || null };
-    const enriched = {
-      ...baseEvent,
-      srv: {
-        t: new Date().toISOString(),
-        ip: (event.headers['x-forwarded-for'] || '').split(',')[0]?.trim() || '',
-        ua: event.headers['user-agent'] || '',
-        ct: event.headers['content-type'] || '',
-        b64: Boolean(event.isBase64Encoded),
-      },
-    };
-
     await store.append('events.ndjson', JSON.stringify(enriched) + '\n');
 
+    // Success
     return {
       statusCode: 204,
       headers: { 'Access-Control-Allow-Origin': '*' },
       body: '',
     };
   } catch (e) {
-    console.error('telemetry error:', e);
+    // Soft-fail: log and accept so client never sees a 500
+    console.warn('[telemetry] fallback log-only:', e?.message || e);
+    console.log('[telemetry] event:', JSON.stringify(enriched));
+
     return {
-      statusCode: 500,
+      statusCode: 202, // accepted but not persisted
       headers: { 'Access-Control-Allow-Origin': '*' },
-      body: JSON.stringify({ error: 'telemetry_failed' }),
+      body: '',
     };
   }
 };
