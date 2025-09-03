@@ -1,4 +1,48 @@
-
 [build]
-  functions = "netlify/functions"
   publish = "."
+  functions = "netlify/functions"
+
+# ---------- Caching ----------
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-store, must-revalidate"
+
+[[headers]]
+  for = "/src/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# ---------- Security baseline ----------
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
+
+# ---------- SPA fallback ----------
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# ---------- Deploy Preview: sta Netlify UI-iframe toe ----------
+[context.deploy-preview]
+  [[context.deploy-preview.headers]]
+    for = "/*"
+    [context.deploy-preview.headers.values]
+      Content-Security-Policy = "default-src 'self'; frame-src 'self' https://app.netlify.com; frame-ancestors 'self' https://app.netlify.com; img-src 'self' https: data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' https:"
+
+# ---------- Production: strakker ----------
+[context.production]
+  [[context.production.headers]]
+    for = "/*"
+    [context.production.headers.values]
+      Content-Security-Policy = "default-src 'self'; frame-src 'self'; frame-ancestors 'self'; img-src 'self' https: data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' https:"
