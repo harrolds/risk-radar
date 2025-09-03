@@ -1,12 +1,12 @@
 // src/app/bootstrap/async-ui-init.js
-// Async UI bootstrap die zonder pagina-wijzigingen werkt.
-// - Patcht window.fetch voor jouw data-endpoints (CG functions)
-// - Gebruikt de bestaande live-regio via RR_A11Y (uit a11y-init.js)
-// - Biedt optionele helper-API: window.RR_AUI.{loading, empty, error, done}
+// Verbeterde Async UI bootstrap:
+// - Patcht window.fetch VROEG
+// - Matcht zowel "/.netlify/functions/cg" als "/.netlify/functions/cg/..."
+// - Anti-flicker: korte delay voor 'Gegevens laden…' zodat screenreaders het horen
 
 (function () {
-  // Welke requests willen we aankondigen?
-  const INCLUDE_PATTERNS = ['/.netlify/functions/cg/']; // CoinGecko proxy
+  // Endpoints die we willen aankondigen (CoinGecko proxy)
+  const INCLUDE_PATTERNS = ['/.netlify/functions/cg']; // zonder / aan eind -> vangt beide varianten
   const EXCLUDE_PATTERNS = [
     '/.netlify/functions/telemetry',
     '/.netlify/functions/log'
@@ -19,41 +19,72 @@
     return inc && !exc;
   }
 
+  // Safety: no-ops wanneer RR_A11Y nog niet bestaat
+  function announceLoading(msg){ try { window.RR_A11Y?.announceLoading?.(msg); } catch {} }
+  function announceError(msg){ try { window.RR_A11Y?.announceError?.(msg); } catch {} }
+  function announceDone(msg){ try { window.RR_A11Y?.announce?.(msg); } catch {} }
+
   const nativeFetch = window.fetch.bind(window);
 
-  // Patch fetch
+  // Anti-flicker: start 'laden' pas na een korte delay
+  let active = 0;
+  let loadingTimer = null;
+  const LOADING_DELAY_MS = 150; // voldoende om 'Gegevens laden…' hoorbaar te maken
+
+  function onRequestStart() {
+    active += 1;
+    if (active === 1 && loadingTimer == null) {
+      loadingTimer = setTimeout(() => {
+        announceLoading('Gegevens laden…');
+        loadingTimer = null;
+      }, LOADING_DELAY_MS);
+    }
+  }
+
+  function onRequestEnd(ok, status) {
+    active = Math.max(0, active - 1);
+    if (active === 0) {
+      // Geen lopende requests meer: clear pending timer en kondig resultaat aan (indien niet fout)
+      if (loadingTimer) { clearTimeout(loadingTimer); loadingTimer = null; }
+      if (ok) announceDone('Gegevens geladen');
+      // Bij fout kondigen we al direct aan in de catch/!ok-tak hieronder.
+    }
+  }
+
+  // Patch window.fetch
   window.fetch = async function (input, init) {
     const url = typeof input === 'string' ? input : (input && input.url) || '';
     const monitored = isMonitored(url);
 
-    if (monitored && window.RR_A11Y?.announceLoading) {
-      window.RR_A11Y.announceLoading('Gegevens laden…');
-    }
+    if (monitored) onRequestStart();
 
     try {
       const res = await nativeFetch(input, init);
 
-      if (monitored && window.RR_A11Y) {
+      if (monitored) {
         if (!res.ok) {
-          window.RR_A11Y.announceError(`Laden mislukt (${res.status})`);
+          // Foutstatus meteen melden (assertiever)
+          announceError(`Laden mislukt (${res.status})`);
+          onRequestEnd(false, res.status);
         } else {
-          window.RR_A11Y.announce('Gegevens geladen');
+          onRequestEnd(true, res.status);
         }
       }
       return res;
     } catch (err) {
-      if (monitored && window.RR_A11Y?.announceError) {
-        window.RR_A11Y.announceError('Netwerkfout bij laden');
+      if (monitored) {
+        announceError('Netwerkfout bij laden');
+        onRequestEnd(false, 0);
       }
       throw err;
     }
   };
 
-  // Optionele handmatige helpers (je hoeft ze niet te gebruiken)
+  // Optionele handmatige helpers (netjes laten staan)
   window.RR_AUI = {
-    loading: (msg = 'Laden…') => window.RR_A11Y?.announceLoading?.(msg),
-    empty:   (msg = 'Geen resultaten') => window.RR_A11Y?.announceEmpty?.(msg),
-    error:   (msg = 'Er is een fout opgetreden') => window.RR_A11Y?.announceError?.(msg),
-    done:    (msg = 'Klaar') => window.RR_A11Y?.announce?.(msg),
+    loading: (msg = 'Gegevens laden…') => announceLoading(msg),
+    empty:   (msg = 'Geen resultaten') => { try { window.RR_A11Y?.announceEmpty?.(msg); } catch {} },
+    error:   (msg = 'Er is een fout opgetreden') => announceError(msg),
+    done:    (msg = 'Gegevens geladen') => announceDone(msg),
   };
 })();
