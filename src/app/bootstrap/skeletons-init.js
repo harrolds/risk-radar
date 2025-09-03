@@ -1,43 +1,31 @@
 // src/app/bootstrap/skeletons-init.js
-// Toont skeletons tijdens CG-calls. Containers (optioneel in je DOM):
+// Toont skeletons alléén bij initieel laden (lege lijsten). Geen dimmen van bestaande content.
+// Containers (optioneel in je DOM):
 //   #coins-list, #watchlist-list, #trending-list
-(function(){
+(function () {
   const SEL = {
-    coins:     '#coins-list',
+    coins: '#coins-list',
     watchlist: '#watchlist-list',
-    trending:  '#trending-list'
+    trending: '#trending-list',
   };
 
-  function ensureSkeleton(mount, type='coins') {
-    const host = document.querySelector(mount);
-    if (!host) return null;
-
-    let sk = host.querySelector(':scope > .rr-skeleton');
-    if (!sk) {
-      sk = document.createElement('div');
-      sk.className = 'rr-skeleton';
-      sk.setAttribute('aria-hidden', 'true');
-      sk.innerHTML = skeletonMarkup(type);
-      host.prepend(sk);
-    }
-    sk.hidden = false;
-    // Verberg echte inhoud (simpel: alles behalve skeleton)
-    Array.from(host.children).forEach(ch => { if (ch !== sk) ch.style.opacity = '0.35'; });
-    return sk;
+  function getHost(sel) {
+    return document.querySelector(sel);
   }
-
-  function hideSkeleton(mount) {
-    const host = document.querySelector(mount);
-    if (!host) return;
-    const sk = host.querySelector(':scope > .rr-skeleton');
-    if (sk) sk.hidden = true;
-    Array.from(host.children).forEach(ch => { if (ch !== sk) ch.style.opacity = ''; });
+  function listCount(host) {
+    if (!host) return 0;
+    const list = host.querySelector('ul, ol');
+    return list ? list.children.length : 0;
+  }
+  function containerIsEmpty(sel) {
+    const host = getHost(sel);
+    return host ? listCount(host) === 0 : false;
   }
 
   function skeletonMarkup(type) {
-    const rows = (type === 'trending') ? 6 : 10;
+    const rows = type === 'trending' ? 6 : 10;
     let html = '<div class="rr-skeleton-list">';
-    for (let i=0;i<rows;i++){
+    for (let i = 0; i < rows; i++) {
       html += `
         <div class="skel-row">
           <div class="skel skel--avatar"></div>
@@ -52,29 +40,73 @@
     return html;
   }
 
-  function applyStart(detail){
-    if (!detail) return;
-    const { endpoint, isWatchlist } = detail;
-    if (endpoint === 'search_trending') {
-      ensureSkeleton(SEL.trending, 'trending'); return;
+  function ensureSkeleton(sel, type) {
+    const host = getHost(sel);
+    if (!host) return null;
+
+    // Alleen als de container nog leeg is tonen we skeletons
+    if (!containerIsEmpty(sel)) return null;
+
+    let sk = host.querySelector(':scope > .rr-skeleton');
+    if (!sk) {
+      sk = document.createElement('div');
+      sk.className = 'rr-skeleton';
+      sk.setAttribute('aria-hidden', 'true');
+      sk.innerHTML = skeletonMarkup(type);
+      host.prepend(sk);
     }
-    if (endpoint === 'coins_markets') {
-      if (isWatchlist) ensureSkeleton(SEL.watchlist, 'watchlist');
-      else ensureSkeleton(SEL.coins, 'coins');
-    }
+    sk.hidden = false;
+    return sk;
   }
-  function applyEnd(detail){
+
+  function hideSkeleton(sel) {
+    const host = getHost(sel);
+    if (!host) return;
+    const sk = host.querySelector(':scope > .rr-skeleton');
+    if (sk) sk.hidden = true;
+  }
+
+  // Start/End handlers — toon alleen skeletons bij échte "leeg → laden" situaties
+  function onStart(detail) {
     if (!detail) return;
-    const { endpoint, isWatchlist } = detail;
+    const { endpoint, ids = '' } = detail;
+
+    // Trending: alleen skeleton als trending-container leeg is
     if (endpoint === 'search_trending') {
-      hideSkeleton(SEL.trending); return;
+      if (containerIsEmpty(SEL.trending)) ensureSkeleton(SEL.trending, 'trending');
+      return;
     }
+
+    // Coins markets:
+    // - Zonder ids => volledige lijst (Coins): skeleton alleen als coins-container leeg is
+    // - Met ids    => batch refresh / watchlist: géén skeleton voor coins;
+    //                alleen tonen als er een watchlist-container is én die leeg is
     if (endpoint === 'coins_markets') {
-      if (isWatchlist) hideSkeleton(SEL.watchlist);
-      else hideSkeleton(SEL.coins);
+      if (ids) {
+        if (containerIsEmpty(SEL.watchlist)) ensureSkeleton(SEL.watchlist, 'watchlist');
+      } else {
+        if (containerIsEmpty(SEL.coins)) ensureSkeleton(SEL.coins, 'coins');
+      }
     }
   }
 
-  window.addEventListener('rr:cg:start', (e)=> applyStart(e.detail));
-  window.addEventListener('rr:cg:end',   (e)=> applyEnd(e.detail));
+  function onEnd(detail) {
+    if (!detail) return;
+    const { endpoint, ids = '' } = detail;
+
+    if (endpoint === 'search_trending') {
+      hideSkeleton(SEL.trending);
+      return;
+    }
+    if (endpoint === 'coins_markets') {
+      if (ids) {
+        hideSkeleton(SEL.watchlist);
+      } else {
+        hideSkeleton(SEL.coins);
+      }
+    }
+  }
+
+  window.addEventListener('rr:cg:start', (e) => onStart(e.detail));
+  window.addEventListener('rr:cg:end', (e) => onEnd(e.detail));
 })();
