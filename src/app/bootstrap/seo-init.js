@@ -1,14 +1,12 @@
 // src/app/bootstrap/seo-init.js
-// Dynamische SEO voor SPA: titel, description, Open Graph, canonical, robots, twitter.
-// Werkt met hash-routes (#/...), patcht pushState/replaceState en luistert op hashchange/popstate.
+// Dynamische SEO: titel, description, Open Graph, canonical, robots, twitter.
 
 import { t } from '../i18n/index.js';
 
 (function () {
   const SITE_NAME = 'RiskRadar';
-  const BASE_URL = location.origin; // absolute canonical base
+  const BASE_URL = location.origin;
 
-  // --- Helpers --------------------------------------------------------------
   function ensureMetaByName(name) {
     let el = document.head.querySelector(`meta[name="${name}"]`);
     if (!el) { el = document.createElement('meta'); el.setAttribute('name', name); document.head.appendChild(el); }
@@ -25,7 +23,6 @@ import { t } from '../i18n/index.js';
     return el;
   }
 
-  // Route parsing (matcht jouw router)
   function parseRoute() {
     const hash = window.location.hash || '';
     const m = hash.match(/^#\/coin\/([^/]+)$/);
@@ -39,7 +36,6 @@ import { t } from '../i18n/index.js';
     return { route: 'notfound', params: {} };
   }
 
-  // Titles / descriptions
   const i18n = (k, fb) => { try { return t?.(k) || fb; } catch { return fb; } };
 
   function titleFor(route, params) {
@@ -70,7 +66,6 @@ import { t } from '../i18n/index.js';
     }
   }
 
-  // Canonical path zonder hash (SPA-compat; Netlify serveert overal index.html)
   function pathFor(route, params) {
     switch (route) {
       case 'home':       return '/';
@@ -92,13 +87,10 @@ import { t } from '../i18n/index.js';
     const path  = pathFor(route, params);
     const url   = BASE_URL + path;
 
-    // Document title (houdt lijn met router; zelfde string voorkomt flikkeren)
     document.title = `RiskRadar — ${title}`;
 
-    // Meta description
     ensureMetaByName('description').setAttribute('content', desc);
 
-    // Open Graph
     ensureMetaByProp('og:site_name').setAttribute('content', SITE_NAME);
     ensureMetaByProp('og:type').setAttribute('content', route === 'home' ? 'website' : 'article');
     ensureMetaByProp('og:title').setAttribute('content', `${title} | ${SITE_NAME}`);
@@ -106,20 +98,15 @@ import { t } from '../i18n/index.js';
     ensureMetaByProp('og:url').setAttribute('content', url);
     ensureMetaByProp('og:locale').setAttribute('content', 'nl_NL');
 
-    // Twitter (basic)
     ensureMetaByName('twitter:card').setAttribute('content', 'summary');
     ensureMetaByName('twitter:title').setAttribute('content', `${title} | ${SITE_NAME}`);
     ensureMetaByName('twitter:description').setAttribute('content', desc);
 
-    // Canonical
     ensureLinkCanonical().setAttribute('href', url);
-
-    // Robots (zorg dat-ie bestaat en staat op index,follow)
     ensureMetaByName('robots').setAttribute('content', 'index,follow');
   }
 
-  // Hooks op navigatie: initial + hash/popstate + push/replace
-  document.addEventListener('DOMContentLoaded', updateSEO);
+  // Hooks
   window.addEventListener('hashchange', updateSEO);
   window.addEventListener('popstate', updateSEO);
 
@@ -127,4 +114,14 @@ import { t } from '../i18n/index.js';
   const _replace = history.replaceState;
   history.pushState = function (s, t, u) { const r = _push.apply(this, arguments); setTimeout(updateSEO, 0); return r; };
   history.replaceState = function (s, t, u) { const r = _replace.apply(this, arguments); setTimeout(updateSEO, 0); return r; };
+
+  // Init – werkt óók als DOM al geladen is
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', updateSEO, { once: true });
+  } else {
+    updateSEO();
+  }
+
+  // Debug API in console
+  window.RR_SEO = { update: updateSEO };
 })();
