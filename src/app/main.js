@@ -1,6 +1,4 @@
 // src/app/main.js
-// Entry — gebruikt de bestaande shell (#rr-header, #rr-main > #rr-app, #rr-bottomnav, #rr-footer)
-
 import { initRouter } from './router.js';
 import { Header } from './components/Header.js';
 import { Footer } from './components/Footer.js';
@@ -8,7 +6,6 @@ import { BottomNav } from './components/BottomNav.js';
 import { getLocale } from './i18n/index.js';
 import { initTheme } from './utils/theme.js';
 
-/** Mount helper (function or {render|mount} object) */
 function mountComponent(component, target, name) {
   try {
     if (!component || !target) return;
@@ -21,12 +18,9 @@ function mountComponent(component, target, name) {
     if (typeof component.render === 'function') { component.render(target); return; }
     if (typeof component.mount === 'function') { component.mount(target); return; }
     target.innerHTML = '';
-  } catch (e) {
-    console.warn(`[main] mount ${name} failed:`, e);
-  }
+  } catch (e) { console.warn(`[main] mount ${name} failed:`, e); }
 }
 
-/** Gebruik DOM uit index.html; maak aan als iets ontbreekt */
 function ensureShell() {
   let rrMain = document.getElementById('rr-main');
   if (!rrMain) {
@@ -37,36 +31,16 @@ function ensureShell() {
     document.body.appendChild(rrMain);
   }
   let appHost = document.getElementById('rr-app');
-  if (!appHost) {
-    appHost = document.createElement('div');
-    appHost.id = 'rr-app';
-    rrMain.appendChild(appHost);
-  }
+  if (!appHost) { appHost = document.createElement('div'); appHost.id = 'rr-app'; rrMain.appendChild(appHost); }
   let headerEl = document.getElementById('rr-header');
-  if (!headerEl) {
-    headerEl = document.createElement('div');
-    headerEl.id = 'rr-header';
-    headerEl.setAttribute('role', 'banner');
-    document.body.prepend(headerEl);
-  }
+  if (!headerEl) { headerEl = document.createElement('div'); headerEl.id = 'rr-header'; headerEl.setAttribute('role', 'banner'); document.body.prepend(headerEl); }
   let footerEl = document.getElementById('rr-footer');
-  if (!footerEl) {
-    footerEl = document.createElement('div');
-    footerEl.id = 'rr-footer';
-    footerEl.setAttribute('role', 'contentinfo');
-    document.body.appendChild(footerEl);
-  }
+  if (!footerEl) { footerEl = document.createElement('div'); footerEl.id = 'rr-footer'; footerEl.setAttribute('role', 'contentinfo'); document.body.appendChild(footerEl); }
   let bottomNavEl = document.getElementById('rr-bottomnav');
-  if (!bottomNavEl) {
-    bottomNavEl = document.createElement('nav');
-    bottomNavEl.id = 'rr-bottomnav';
-    bottomNavEl.setAttribute('aria-label', 'Onderste navigatie');
-    footerEl.prepend(bottomNavEl);
-  }
+  if (!bottomNavEl) { bottomNavEl = document.createElement('nav'); bottomNavEl.id = 'rr-bottomnav'; bottomNavEl.setAttribute('aria-label', 'Onderste navigatie'); footerEl.prepend(bottomNavEl); }
   return { headerEl, bottomNavEl, footerEl, appHost };
 }
 
-/** Injecteer minimale layout CSS (max-width container) als die nog niet bestaat */
 function ensureLayoutStyles() {
   if (document.getElementById('rr-layout-styles')) return;
   const style = document.createElement('style');
@@ -80,14 +54,13 @@ function ensureLayoutStyles() {
   document.head.appendChild(style);
 }
 
-/** Houd default in lijn met je UI: '#/' == Home */
 function ensureDefaultRoute() {
   if (!location.hash || location.hash === '#') {
     location.replace('#/');
   }
 }
 
-/** Delegate kliknavigatie voor anchors met '#/' of '/#/' en forceer hashchange */
+// Forceer hash routing op anchor-clicks
 function enableAnchorRouting() {
   document.addEventListener('click', (e) => {
     const a = e.target && e.target.closest && e.target.closest('a[href]');
@@ -96,14 +69,15 @@ function enableAnchorRouting() {
     if (href.startsWith('#/') || href.startsWith('/#/')) {
       e.preventDefault();
       const nextHash = href.startsWith('/#/') ? href.slice(1) : href;
-      location.hash = nextHash;
-      // Forceer altijd een update, ook als browser het event debounced
+      if (location.hash !== nextHash) {
+        location.hash = nextHash;
+      }
+      // Forceer altijd update
       window.dispatchEvent(new HashChangeEvent('hashchange'));
     }
   }, true);
 }
 
-/** Bootstrap met guard */
 function bootstrap() {
   if (window.__RR_BOOTSTRAPPED__) return;
   window.__RR_BOOTSTRAPPED__ = true;
@@ -120,14 +94,10 @@ function bootstrap() {
   mountComponent(Footer, footerEl, 'Footer');
 
   ensureDefaultRoute();
-
-  try { initRouter(); }
-  catch (e) { console.error('[RiskRadar] initRouter failed:', e); }
+  try { initRouter(); } catch (e) { console.error('[RiskRadar] initRouter failed:', e); }
 }
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', bootstrap, { once: true });
-} else {
-  bootstrap();
-}
+} else { bootstrap(); }
 window.addEventListener('load', bootstrap, { once: true });
