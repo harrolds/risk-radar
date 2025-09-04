@@ -1,24 +1,12 @@
 // src/app/pages/Coins/index.js
-// Coins page met lifecycle hooks (onCleanup/getAbortSignal).
-// Vervang de placeholder render met jouw bestaande lijstweergave.
-
 import { t } from '../../i18n/index.js';
-
 /**
  * @typedef {{ onCleanup?: (fn: () => void) => void, getAbortSignal?: () => AbortSignal }} PageOpts
  */
-
-/**
- * Render Coins page.
- * @param {PageOpts=} opts
- */
 export function renderCoins(opts = {}) {
   const { onCleanup = () => {}, getAbortSignal = () => new AbortController().signal } = opts;
-
-  const outlet = document.getElementById('app');
+  const outlet = document.getElementById('rr-app');
   if (!outlet) return;
-
-  // === JOUW BESTAANDE UI-STRUCTUUR HIERONDER ===
   outlet.innerHTML = /* html */ `
     <section id="coins" class="page page-coins">
       <header class="page-header">
@@ -32,11 +20,7 @@ export function renderCoins(opts = {}) {
       <ul id="coins-list" class="coins-list"></ul>
     </section>
   `;
-  // === EINDE UI ZONE ===
-
   const listEl = outlet.querySelector('#coins-list');
-
-  // Tabbed filter events (voorbeeld — vervang door jouw logica)
   const tabs = outlet.querySelectorAll('.tabs .tab');
   const onTabClick = (e) => {
     tabs.forEach((b) => b.classList.remove('is-active'));
@@ -45,27 +29,15 @@ export function renderCoins(opts = {}) {
   };
   tabs.forEach((b) => b.addEventListener('click', onTabClick));
   onCleanup(() => tabs.forEach((b) => b.removeEventListener('click', onTabClick)));
-
-  // Example: laad coins (vervang door jouw echte endpoint + renderer)
   fetch('/.netlify/functions/markets', { signal: getAbortSignal() })
     .then((r) => r.json())
     .then((data) => {
       if (!Array.isArray(data)) return;
-      listEl.innerHTML = data
-        .slice(0, 20)
-        .map(
-          (c) =>
-            `<li class="coin"><span class="name">${c.name}</span> <span class="sym">${
-              c.symbol?.toUpperCase?.() || ''
-            }</span></li>`
-        )
-        .join('');
+      listEl.innerHTML = data.slice(0, 20).map(
+        (c) => `<li class="coin"><span class="name">${c.name}</span> <span class="sym">${(c.symbol?.toUpperCase?.() || '')}</span></li>`
+      ).join('');
     })
-    .catch((err) => {
-      if (err?.name !== 'AbortError') console.warn('[Coins] fetch error', err);
-    });
-
-  // Locale live update (header/tabs labels)
+    .catch((err) => { if (err?.name !== 'AbortError') console.warn('[Coins] fetch error', err); });
   const onLocale = () => {
     const h1 = outlet.querySelector('h1');
     if (h1) h1.textContent = t('coins.title');
