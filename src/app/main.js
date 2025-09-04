@@ -65,11 +65,44 @@ function ensureShell() {
   return { headerEl, bottomNavEl, footerEl, appHost };
 }
 
+/** Injecteer minimale layout CSS (max-width container) als die nog niet bestaat */
+function ensureLayoutStyles() {
+  if (document.getElementById('rr-layout-styles')) return;
+  const style = document.createElement('style');
+  style.id = 'rr-layout-styles';
+  style.textContent = `
+    .rr-container { max-width: 960px; margin: 0 auto; padding: 0 16px; }
+    .page-header { margin: 16px 0 12px; }
+    .coins-list { list-style: none; padding: 0; margin: 0; }
+    .coins-list .coin { display: flex; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,.06); }
+  `;
+  document.head.appendChild(style);
+}
+
 /** Houd default in lijn met je UI: '#/' == Home */
 function ensureDefaultRoute() {
   if (!location.hash || location.hash === '#') {
     location.replace('#/');
   }
+}
+
+/** Delegate kliknavigatie voor anchors met '#/' of '/#/' */
+function enableAnchorRouting() {
+  document.addEventListener('click', (e) => {
+    const a = e.target && e.target.closest && e.target.closest('a[href]');
+    if (!a) return;
+    const href = a.getAttribute('href') || '';
+    if (href.startsWith('#/') || href.startsWith('/#/')) {
+      e.preventDefault();
+      const nextHash = href.startsWith('/#/') ? href.slice(1) : href;
+      if (location.hash !== nextHash) {
+        location.hash = nextHash;
+      } else {
+        // Zelfde hash geklikt → forceer re-render
+        window.dispatchEvent(new HashChangeEvent('hashchange'));
+      }
+    }
+  }, true);
 }
 
 /** Bootstrap met guard */
@@ -80,6 +113,9 @@ function bootstrap() {
   try { document.documentElement.setAttribute('lang', getLocale()); } catch (_) {}
 
   const { headerEl, bottomNavEl, footerEl } = ensureShell();
+  ensureLayoutStyles();
+  enableAnchorRouting();
+
   mountComponent(Header, headerEl, 'Header');
   mountComponent(BottomNav, bottomNavEl, 'BottomNav');
   mountComponent(Footer, footerEl, 'Footer');
