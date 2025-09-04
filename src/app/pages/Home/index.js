@@ -1,24 +1,12 @@
 // src/app/pages/Home/index.js
-// Home page met lifecycle hooks (onCleanup/getAbortSignal).
-// Zet jouw bestaande DOM-render code binnen de aangegeven zone.
-
 import { t } from '../../i18n/index.js';
-
 /**
  * @typedef {{ onCleanup?: (fn: () => void) => void, getAbortSignal?: () => AbortSignal }} PageOpts
  */
-
-/**
- * Render Home page.
- * @param {PageOpts=} opts
- */
 export function renderHome(opts = {}) {
   const { onCleanup = () => {}, getAbortSignal = () => new AbortController().signal } = opts;
-
-  const outlet = document.getElementById('app');
+  const outlet = document.getElementById('rr-app'); // render into #rr-app
   if (!outlet) return;
-
-  // === JOUW BESTAANDE UI-STRUCTUUR HIERONDER (vrij aanpassen/inplakken) ===
   outlet.innerHTML = /* html */ `
     <section id="home" class="page page-home">
       <header class="page-header">
@@ -30,9 +18,6 @@ export function renderHome(opts = {}) {
       </div>
     </section>
   `;
-  // === EINDE UI ZONE ===
-
-  // Locale live update (voorbeeld)
   const onLocale = () => {
     const h1 = outlet.querySelector('h1');
     const sub = outlet.querySelector('.sub');
@@ -41,14 +26,7 @@ export function renderHome(opts = {}) {
   };
   window.addEventListener('localechange', onLocale);
   onCleanup(() => window.removeEventListener('localechange', onLocale));
-
-  // Voorbeeld van abortable fetch (vervang door jouw echte endpoint)
   fetch('/.netlify/functions/ping', { signal: getAbortSignal() })
     .then((r) => (r.ok ? r.text() : 'ok'))
-    .then(() => {
-      // no-op; rooktest
-    })
-    .catch((err) => {
-      if (err?.name !== 'AbortError') console.warn('[Home] fetch error', err);
-    });
+    .catch((err) => { if (err?.name !== 'AbortError') console.warn('[Home] fetch error', err); });
 }
