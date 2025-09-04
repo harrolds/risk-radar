@@ -1,5 +1,6 @@
 // src/app/router.js
-// Minimal SPA router with lifecycle cleanup (backwards compatible).
+// SPA router met nette cleanup + robuuste mount naar #rr-app
+
 import { renderHome } from './pages/Home/index.js';
 import { renderCoins } from './pages/Coins/index.js';
 import { renderSettings } from './pages/Settings/index.js';
@@ -12,38 +13,95 @@ import { renderSettings } from './pages/Settings/index.js';
 function createRouteContext() {
   return { abortController: new AbortController(), cleanups: new Set() };
 }
+
 /** @type {RouteContext} */
 let ctx = createRouteContext();
-export function onCleanup(fn) { ctx.cleanups.add(fn); }
-export function getAbortSignal() { return ctx.abortController.signal; }
+
+/**
+ * Registreer cleanup-callbacks (wordt bij navigatie uitgevoerd)
+ * @param {() => void} fn
+ */
+export function onCleanup(fn) {
+  ctx.cleanups.add(fn);
+}
+
+/** AbortSignal voor abortable fetches binnen de huidige route */
+export function getAbortSignal() {
+  return ctx.abortController.signal;
+}
+
+/** Unmount huidige route: abort pending requests + run cleanups */
 function unmountCurrent() {
   try { ctx.abortController.abort(); } catch (_) {}
-  for (const fn of ctx.cleanups) { try { fn(); } catch (e) { console.warn('[router] cleanup error', e);} }
+  for (const fn of ctx.cleanups) {
+    try { fn(); } catch (e) { console.warn('[router] cleanup error', e); }
+  }
   ctx.cleanups.clear();
 }
+
+/** Render de gegeven route in #rr-app */
 function mount(route) {
-  const outlet = document.getElementById('rr-app'); // <-- render into #rr-app
-  if (!outlet) return;
+  const outlet = document.getElementById('rr-app');
+  if (!outlet) {
+    console.warn('[router] #rr-app niet gevonden');
+    return;
+  }
+
+  // Nieuwe context voor de frisse route
   ctx = createRouteContext();
+
+  // Leeg de outlet vooraf (voorkomt “rommel”)
+  outlet.innerHTML = '';
+
+  // Options ALTIJD doorgeven (geen arity-check meer)
   const opts = { onCleanup, getAbortSignal };
+
   switch (route) {
-    case 'home': renderHome?.length ? renderHome(opts) : renderHome(); break;
-    case 'coins': renderCoins?.length ? renderCoins(opts) : renderCoins(); break;
-    case 'settings': renderSettings?.length ? renderSettings(opts) : renderSettings(); break;
-    default: renderHome?.length ? renderHome(opts) : renderHome(); break;
+    case 'home':
+    case '':
+      renderHome(opts);
+      break;
+    case 'coins':
+      renderCoins(opts);
+      break;
+    case 'settings':
+      renderSettings(opts);
+      break;
+    // Toekomstige placeholders (Compare/Portfolio/Pro)
+    case 'compare':
+      outlet.innerHTML = `<section class="page"><h1>Vergelijk</h1><p>Deze pagina komt later beschikbaar.</p></section>`;
+      break;
+    case 'portfolio':
+      outlet.innerHTML = `<section class="page"><h1>Portfolio</h1><p>Deze pagina komt later beschikbaar.</p></section>`;
+      break;
+    case 'pro':
+      outlet.innerHTML = `<section class="page"><h1>RiskRadar Pro</h1><p>Upgrade-flow volgt in Fase 7.</p></section>`;
+      break;
+    default:
+      renderHome(opts);
+      break;
   }
 }
+
+/** Hash-router handler */
 function handleRouteChange() {
   unmountCurrent();
+  // '#/' => hash = '#/', slice(1) => '/', replace(/^\//,'') => '' => 'home'
   const hash = (location.hash || '#/').slice(1);
   const path = hash.replace(/^\//, '');
   mount(path || 'home');
 }
+
+/** Init router (call once) */
 export function initRouter() {
   window.addEventListener('hashchange', handleRouteChange);
   onCleanup(() => window.removeEventListener('hashchange', handleRouteChange));
+
+  // Re-render bij taalwissel (optioneel, houdt pages simpel)
   const onLocale = () => handleRouteChange();
   window.addEventListener('localechange', onLocale);
   onCleanup(() => window.removeEventListener('localechange', onLocale));
+
+  // Eerste render
   handleRouteChange();
 }
