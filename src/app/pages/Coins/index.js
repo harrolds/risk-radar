@@ -22,47 +22,60 @@ export function renderCoins(opts = {}) {
         </header>
         <ul id="coins-list" class="coins-list"></ul>
         <p id="coins-msg" class="coins-msg" style="margin-top:8px;opacity:.8;"></p>
+        <button id="coins-retry" class="rr-pill" style="display:none;margin-top:8px;">Opnieuw proberen</button>
       </section>
     </div>
   `;
 
   const listEl = outlet.querySelector('#coins-list');
   const msgEl = outlet.querySelector('#coins-msg');
+  const retryBtn = outlet.querySelector('#coins-retry');
 
   const tabs = outlet.querySelectorAll('.tabs .tab');
   const onTabClick = (e) => {
     tabs.forEach((b) => b.classList.remove('is-active'));
     e.currentTarget.classList.add('is-active');
-    // TODO: filterrendering hier
+    // TODO: eenvoudige client-side filter indien je dat wilt
   };
   tabs.forEach((b) => b.addEventListener('click', onTabClick));
   onCleanup(() => tabs.forEach((b) => b.removeEventListener('click', onTabClick)));
 
-  // Hardened fetch (geen crashes bij HTML/404)
-  fetch('/.netlify/functions/markets', { signal: getAbortSignal() })
-    .then(async (r) => {
+  function renderList(data) {
+    listEl.innerHTML = data.slice(0, 50).map(
+      (c) => `<li class="coin"><span class="name">${c.name}</span> <span class="sym">${(c.symbol?.toUpperCase?.() || '')}</span></li>`
+    ).join('');
+  }
+
+  async function load() {
+    msgEl.textContent = 'Laden…';
+    retryBtn.style.display = 'none';
+    listEl.innerHTML = '';
+
+    try {
+      const url = `/.netlify/functions/cg?endpoint=coins_markets&vs_currency=eur&order=market_cap_desc&per_page=50&page=1&sparkline=false&price_change_percentage=24h`;
+      const r = await fetch(url, { signal: getAbortSignal() });
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       const ct = r.headers.get('content-type') || '';
       if (!ct.includes('application/json')) {
         const text = await r.text();
         throw new Error(`Non-JSON response: ${text.slice(0, 80)}`);
       }
-      return r.json();
-    })
-    .then((data) => {
+      const data = await r.json();
       if (!Array.isArray(data)) throw new Error('Unexpected data shape');
-      if (!data.length) {
-        msgEl.textContent = t('pred.loadfail') || 'Geen marktdata beschikbaar.';
-      }
-      listEl.innerHTML = data.slice(0, 20).map(
-        (c) => `<li class="coin"><span class="name">${c.name}</span> <span class="sym">${(c.symbol?.toUpperCase?.() || '')}</span></li>`
-      ).join('');
-    })
-    .catch((err) => {
+      renderList(data);
+      msgEl.textContent = '';
+      retryBtn.style.display = 'none';
+    } catch (err) {
       msgEl.textContent = 'Kon marktdata niet laden.';
       listEl.innerHTML = '';
+      retryBtn.style.display = 'inline-block';
+      // bewust warn, geen error (app moet door)
       console.warn('[Coins] fetch warn:', err?.message || err);
-    });
+    }
+  }
+
+  retryBtn.addEventListener('click', load);
+  onCleanup(() => retryBtn.removeEventListener('click', load));
 
   // Locale live update (header/tabs labels)
   const onLocale = () => {
@@ -74,4 +87,6 @@ export function renderCoins(opts = {}) {
   };
   window.addEventListener('localechange', onLocale);
   onCleanup(() => window.removeEventListener('localechange', onLocale));
+
+  load();
 }
