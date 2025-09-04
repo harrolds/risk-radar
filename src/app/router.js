@@ -1,9 +1,9 @@
 // src/app/router.js
 // Minimal SPA router with lifecycle cleanup (backwards compatible).
 
-import { renderHome } from './pages/HomePage/index.js';
-import { renderCoins } from './pages/CoinsPage/index.js';
-import { renderSettings } from './pages/SettingsPage/index.js';
+import { renderHome } from './pages/Home/index.js';
+import { renderCoins } from './pages/Coins/index.js';
+import { renderSettings } from './pages/Settings/index.js';
 
 /**
  * @typedef {Object} RouteContext
