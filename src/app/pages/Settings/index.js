@@ -1,41 +1,61 @@
-import { applyTheme } from '../../main.js';
-import { t, getLocale, setLocale } from '../../i18n/index.js';
+// src/app/pages/Settings/index.js
+// Settings page met lifecycle hooks (onCleanup/getAbortSignal).
 
-export function renderSettingsPage() {
-  const el = document.createElement('div');
-  el.className = 'rr-page';
-  el.innerHTML = `
-    <h1 class="rr-title">${t('settings.title')}</h1>
-    <div style="display:flex;gap:16px;flex-wrap:wrap;">
-      <div>
-        <label for="theme">${t('settings.theme')}</label><br/>
-        <select id="theme">
-          <option value="dark">${t('theme.dark')}</option>
-          <option value="light">${t('theme.light')}</option>
-        </select>
-      </div>
-      <div>
-        <label for="language">${t('settings.language')}</label><br/>
-        <select id="language">
+import { t, setLocale, getLocale } from '../../i18n/index.js';
+
+/**
+ * @typedef {{ onCleanup?: (fn: () => void) => void, getAbortSignal?: () => AbortSignal }} PageOpts
+ */
+
+/**
+ * Render Settings page.
+ * @param {PageOpts=} opts
+ */
+export function renderSettings(opts = {}) {
+  const { onCleanup = () => {}, getAbortSignal = () => new AbortController().signal } = opts;
+
+  const outlet = document.getElementById('app');
+  if (!outlet) return;
+
+  outlet.innerHTML = /* html */ `
+    <section id="settings" class="page page-settings">
+      <header class="page-header"><h1>${t('settings.title')}</h1></header>
+
+      <div class="setting">
+        <label for="lang-select">${t('settings.language')}</label>
+        <select id="lang-select">
           <option value="nl">${t('lang.nl')}</option>
           <option value="de">${t('lang.de')}</option>
           <option value="en">${t('lang.en')}</option>
         </select>
       </div>
-    </div>
-    <p class="rr-subtle" style="margin-top:8px;">${t('settings.note')}</p>
+
+      <p class="note">${t('settings.note')}</p>
+    </section>
   `;
 
-  // Theme wiring
-  const themeSel = el.querySelector('#theme');
-  const currentTheme = localStorage.getItem('rr_theme') || 'dark';
-  themeSel.value = currentTheme;
-  themeSel.addEventListener('change', () => applyTheme(themeSel.value));
+  const select = outlet.querySelector('#lang-select');
+  if (select) {
+    select.value = getLocale();
+    const onChange = (e) => setLocale(e.target.value);
+    select.addEventListener('change', onChange);
+    onCleanup(() => select.removeEventListener('change', onChange));
+  }
 
-  // Language wiring
-  const langSel = el.querySelector('#language');
-  langSel.value = getLocale();
-  langSel.addEventListener('change', () => setLocale(langSel.value));
+  // Locale live update van labels
+  const onLocale = () => {
+    outlet.querySelector('h1').textContent = t('settings.title');
+    outlet.querySelector('label[for="lang-select"]').textContent = t('settings.language');
+    outlet.querySelector('option[value="nl"]').textContent = t('lang.nl');
+    outlet.querySelector('option[value="de"]').textContent = t('lang.de');
+    outlet.querySelector('option[value="en"]').textContent = t('lang.en');
+    outlet.querySelector('.note').textContent = t('settings.note');
+  };
+  window.addEventListener('localechange', onLocale);
+  onCleanup(() => window.removeEventListener('localechange', onLocale));
 
-  return el;
+  // rooktest
+  fetch('/.netlify/functions/ping', { signal: getAbortSignal() }).catch((err) => {
+    if (err?.name !== 'AbortError') console.warn('[Settings] fetch error', err);
+  });
 }
