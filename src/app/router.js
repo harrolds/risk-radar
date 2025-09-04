@@ -50,45 +50,55 @@ function mount(route) {
   // Leeg de outlet vooraf (voorkomt “rommel”)
   outlet.innerHTML = '';
 
-  // Opties ALTIJD doorgeven (geen arity-check)
+  // Opties ALTIJD doorgeven
   const opts = { onCleanup, getAbortSignal };
 
-  switch (route) {
-    case 'home':
-    case '':
-      renderHome(opts);
-      break;
-    case 'coins':
-      renderCoins(opts);
-      break;
-    case 'settings':
-      renderSettings(opts);
-      break;
+  try {
+    switch (route) {
+      case 'home':
+      case '':
+        renderHome(opts);
+        break;
+      case 'coins':
+        renderCoins(opts);
+        break;
+      case 'settings':
+        renderSettings(opts);
+        break;
 
-    // Placeholder routes (optioneel)
-    case 'compare':
-      outlet.innerHTML = `<div class="rr-container"><section class="page"><h1>Vergelijk</h1><p>Deze pagina komt later beschikbaar.</p></section></div>`;
-      break;
-    case 'portfolio':
-      outlet.innerHTML = `<div class="rr-container"><section class="page"><h1>Portfolio</h1><p>Deze pagina komt later beschikbaar.</p></section></div>`;
-      break;
-    case 'pro':
-      outlet.innerHTML = `<div class="rr-container"><section class="page"><h1>RiskRadar Pro</h1><p>Upgrade-flow volgt in Fase 7.</p></section></div>`;
-      break;
+      // Placeholder routes (optioneel)
+      case 'compare':
+        outlet.innerHTML = `<div class="rr-container"><section class="page"><h1>Vergelijk</h1><p>Deze pagina komt later beschikbaar.</p></section></div>`;
+        break;
+      case 'portfolio':
+        outlet.innerHTML = `<div class="rr-container"><section class="page"><h1>Portfolio</h1><p>Deze pagina komt later beschikbaar.</p></section></div>`;
+        break;
+      case 'pro':
+        outlet.innerHTML = `<div class="rr-container"><section class="page"><h1>RiskRadar Pro</h1><p>Upgrade-flow volgt in Fase 7.</p></section></div>`;
+        break;
 
-    default:
-      renderHome(opts);
-      break;
+      default:
+        renderHome(opts);
+        break;
+    }
+  } catch (e) {
+    console.error('[router] route render error:', e);
+    outlet.innerHTML = `<div class="rr-container"><section class="page"><h1>Fout</h1><p>Kon de pagina niet renderen.</p></section></div>`;
   }
+}
+
+/** Normaliseer hash naar route-pad (zonder leidende '/') */
+function currentRoute() {
+  const hash = (location.hash || '#/').slice(1); // drop leading '#'
+  const path = hash.replace(/^\//, '');          // drop leading '/'
+  return path.split('?')[0];                     // drop query
 }
 
 /** Hash-router handler */
 function handleRouteChange() {
   unmountCurrent();
-  // '#/' => hash = '#/', slice(1) => '/', replace(/^\//,'') => '' => 'home'
-  const hash = (location.hash || '#/').slice(1);
-  const path = hash.replace(/^\//, '');
-  mount(path || 'home');
+  const route = currentRoute() || 'home';
+  mount(route);
 }
 
 /** Init router (call once) */
