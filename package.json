@@ -6,3 +6,17 @@
     "@netlify/blobs": "^6.5.0"
   }
 }
+{
+  "scripts": {
+    "lint": "eslint . --ext .js",
+    "lint:fix": "eslint . --ext .js --fix",
+    "format": "prettier . --write",
+    "check:format": "prettier . --check"
+  },
+  "devDependencies": {
+    "eslint": "^9.13.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "prettier": "^3.3.3"
+  }
+}
