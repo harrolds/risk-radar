@@ -6,6 +6,7 @@ import { Header } from './components/Header.js';
 import { Footer } from './components/Footer.js';
 import { BottomNav } from './components/BottomNav.js';
 import { getLocale } from './i18n/index.js';
+import { initTheme } from './utils/theme.js';
 
 /** Mount helper (function or {render|mount} object) */
 function mountComponent(component, target, name) {
@@ -86,7 +87,7 @@ function ensureDefaultRoute() {
   }
 }
 
-/** Delegate kliknavigatie voor anchors met '#/' of '/#/' */
+/** Delegate kliknavigatie voor anchors met '#/' of '/#/' en forceer hashchange */
 function enableAnchorRouting() {
   document.addEventListener('click', (e) => {
     const a = e.target && e.target.closest && e.target.closest('a[href]');
@@ -95,12 +96,9 @@ function enableAnchorRouting() {
     if (href.startsWith('#/') || href.startsWith('/#/')) {
       e.preventDefault();
       const nextHash = href.startsWith('/#/') ? href.slice(1) : href;
-      if (location.hash !== nextHash) {
-        location.hash = nextHash;
-      } else {
-        // Zelfde hash geklikt → forceer re-render
-        window.dispatchEvent(new HashChangeEvent('hashchange'));
-      }
+      location.hash = nextHash;
+      // Forceer altijd een update, ook als browser het event debounced
+      window.dispatchEvent(new HashChangeEvent('hashchange'));
     }
   }, true);
 }
@@ -112,6 +110,7 @@ function bootstrap() {
 
   try { document.documentElement.setAttribute('lang', getLocale()); } catch (_) {}
 
+  initTheme();
   const { headerEl, bottomNavEl, footerEl } = ensureShell();
   ensureLayoutStyles();
   enableAnchorRouting();
