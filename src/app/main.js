@@ -1,5 +1,5 @@
 // src/app/main.js
-// RiskRadar entrypoint — met UI chrome (Header/Footer/BottomNav) + router bootstrap
+// RiskRadar entrypoint — shell (Header/Footer/BottomNav) + router bootstrap into #rr-app
 
 import { initRouter } from './router.js';
 import { Header } from './components/Header.js';
@@ -8,58 +8,14 @@ import { BottomNav } from './components/BottomNav.js';
 import { getLocale } from './i18n/index.js';
 
 /**
- * Zorg dat er een container bestaat met gegeven id.
- * Als deze niet bestaat, wordt hij aangemaakt en op de juiste plek geplaatst.
- * @param {string} id
- * @param {'header'|'main'|'footer'} region
- * @returns {HTMLElement}
- */
-function ensureContainer(id, region) {
-  let el = document.getElementById(id);
-  if (el) return el;
-
-  el = document.createElement(region === 'main' ? 'main' : region);
-  el.id = id;
-
-  // Plaats in logische volgorde: header → main → footer.
-  // Als body leeg is, bouwen we een basisstructuur op.
-  const body = document.body;
-
-  const header = document.getElementById('rr-header');
-  const app = document.getElementById('app');
-  const footer = document.getElementById('rr-footer');
-
-  if (!header && region === 'header') {
-    body.prepend(el);
-  } else if (!app && region === 'main') {
-    if (header) {
-      header.insertAdjacentElement('afterend', el);
-    } else {
-      body.prepend(el);
-    }
-  } else if (!footer && region === 'footer') {
-    body.appendChild(el);
-  } else {
-    // fallback: gewoon achteraan
-    body.appendChild(el);
-  }
-
-  return el;
-}
-
-/**
- * Probeert een component te mounten. We ondersteunen zowel:
- * - functionele componenten: () => string | HTMLElement
- * - object met .render(targetEl) of .mount(targetEl)
+ * Mount a component into a target (supports function or {render|mount} objects).
  * @param {any} component
  * @param {HTMLElement} target
  * @param {string} name
  */
 function mountComponent(component, target, name) {
   try {
-    if (!component) return;
-
-    // function component → string/HTMLElement
+    if (!component || !target) return;
     if (typeof component === 'function') {
       const out = component();
       if (out instanceof HTMLElement) {
@@ -69,8 +25,6 @@ function mountComponent(component, target, name) {
       }
       return;
     }
-
-    // object met render/mount
     if (typeof component.render === 'function') {
       component.render(target);
       return;
@@ -79,62 +33,91 @@ function mountComponent(component, target, name) {
       component.mount(target);
       return;
     }
-
-    // laatste redmiddel
     target.innerHTML = '';
   } catch (e) {
-    console.warn(`[main] Fout bij mounten van ${name}:`, e);
+    console.warn(`[main] mount ${name} failed:`, e);
   }
 }
 
-/**
- * Zet een veilige default route als er nog geen hash is.
- */
+/** Ensure base containers exist; prefer existing DOM from index.html. */
+function ensureShell() {
+  // Main host
+  let rrMain = document.getElementById('rr-main');
+  if (!rrMain) {
+    rrMain = document.createElement('main');
+    rrMain.id = 'rr-main';
+    rrMain.setAttribute('role', 'main');
+    rrMain.setAttribute('tabindex', '-1');
+    document.body.appendChild(rrMain);
+  }
+  let appHost = document.getElementById('rr-app');
+  if (!appHost) {
+    appHost = document.createElement('div');
+    appHost.id = 'rr-app';
+    rrMain.appendChild(appHost);
+  }
+
+  // Header / Footer / Bottom nav
+  let headerEl = document.getElementById('rr-header');
+  if (!headerEl) {
+    headerEl = document.createElement('div');
+    headerEl.id = 'rr-header';
+    headerEl.setAttribute('role', 'banner');
+    document.body.prepend(headerEl);
+  }
+
+  let footerEl = document.getElementById('rr-footer');
+  if (!footerEl) {
+    footerEl = document.createElement('div');
+    footerEl.id = 'rr-footer';
+    footerEl.setAttribute('role', 'contentinfo');
+    document.body.appendChild(footerEl);
+  }
+
+  let bottomNavEl = document.getElementById('rr-bottomnav');
+  if (!bottomNavEl) {
+    bottomNavEl = document.createElement('nav');
+    bottomNavEl.id = 'rr-bottomnav';
+    bottomNavEl.setAttribute('aria-label', 'Onderste navigatie');
+    // place before footer content
+    footerEl.prepend(bottomNavEl);
+  }
+
+  return { headerEl, bottomNavEl, footerEl, appHost };
+}
+
+/** Set a safe default route if none present. */
 function ensureDefaultRoute() {
   if (!location.hash || location.hash === '#') {
     location.replace('#/home');
   }
 }
 
-/**
- * Bouw de basis UI (header, main #app, bottomnav, footer).
- */
-function buildShell() {
-  const headerEl = ensureContainer('rr-header', 'header');
-  const appEl = ensureContainer('app', 'main');
-  const bottomNavMount = ensureContainer('rr-bottomnav', 'footer'); // onderaan vóór footer-content
-  const footerEl = ensureContainer('rr-footer', 'footer');
-
-  // Mount components (defensief)
-  mountComponent(Header, headerEl, 'Header');
-  mountComponent(BottomNav, bottomNavMount, 'BottomNav');
-  mountComponent(Footer, footerEl, 'Footer');
-
-  // Zorg dat main altijd een rol heeft
-  appEl.setAttribute('role', 'main');
-}
-
-/**
- * Eenmalige bootstrap met guard tegen dubbele init.
- */
+/** One-time bootstrap with guard. */
 function bootstrap() {
   if (window.__RR_BOOTSTRAPPED__) return;
   window.__RR_BOOTSTRAPPED__ = true;
 
-  // Locale → html[lang]
   try {
     document.documentElement.setAttribute('lang', getLocale());
   } catch (_) {}
 
-  // Basis UI neerzetten (containers + header/footer/bottomnav)
-  buildShell();
+  const { headerEl, bottomNavEl, footerEl } = ensureShell();
 
-  // Default route en router init
+  // Mount chrome
+  mountComponent(Header, headerEl, 'Header');
+  mountComponent(BottomNav, bottomNavEl, 'BottomNav');
+  mountComponent(Footer, footerEl, 'Footer');
+
   ensureDefaultRoute();
-  initRouter();
+  try {
+    initRouter();
+  } catch (e) {
+    console.error('[RiskRadar] initRouter failed:', e);
+  }
 }
 
-// Init bij DOM ready (fallback op window load)
+// Init on DOM ready (fallback on load)
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', bootstrap, { once: true });
 } else {
