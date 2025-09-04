@@ -1,5 +1,6 @@
 // /src/app/pages/index.js
-export { renderHomePage }       from './Home/index.js';
-export { renderCoinsPage }      from './Coins/index.js';
-export { renderSettingsPage }   from './Settings/index.js';
-export { renderCoinDetailPage } from './CoinDetail/index.js';
+// Canonical page exports without *Page suffix (Task 9 clean-up)
+export { renderHome } from './Home/index.js';
+export { renderCoins } from './Coins/index.js';
+export { renderSettings } from './Settings/index.js';
+export { renderCoinDetail } from './CoinDetail/index.js';
