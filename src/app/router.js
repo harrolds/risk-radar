@@ -1,75 +1,119 @@
-// /src/app/router.js
-import { t } from './i18n/index.js';
-import {
-  renderHomePage,
-  renderCoinsPage,
-  renderSettingsPage,
-  renderCoinDetailPage
-} from './pages/index.js';
+// src/app/router.js
+// Minimal SPA router with lifecycle cleanup (backwards compatible).
 
-export function initRouter({ mount }) {
-  function parse(hash) {
-    const coinMatch = hash.match(/^#\/coin\/([^/]+)$/);
-    if (coinMatch) return { route: 'coinDetail', params: { id: decodeURIComponent(coinMatch[1]) } };
+import { renderHome } from './pages/HomePage/index.js';
+import { renderCoins } from './pages/CoinsPage/index.js';
+import { renderSettings } from './pages/SettingsPage/index.js';
 
-    if (hash === '' || hash === '#' || hash === '#/') return { route: 'home', params: {} };
-    if (hash.startsWith('#/coins'))     return { route: 'coins',     params: {} };
-    if (hash.startsWith('#/settings'))  return { route: 'settings',  params: {} };
-    if (hash.startsWith('#/compare'))   return { route: 'compare',   params: {} };
-    if (hash.startsWith('#/portfolio')) return { route: 'portfolio', params: {} };
-    if (hash.startsWith('#/pro'))       return { route: 'pro',       params: {} };
-    return { route: 'notfound', params: {} };
-  }
+/**
+ * @typedef {Object} RouteContext
+ * @property {AbortController} abortController
+ * @property {Set<() => void>} cleanups
+ */
 
-  function simplePage(title, body='') {
-    const el = document.createElement('div');
-    el.className = 'rr-page';
-    el.innerHTML = `<h1 class="rr-title">${title}</h1>${body || '<p class="rr-subtle">Placeholder – inhoud volgt in volgende fase.</p>'}`;
-    return el;
-  }
+/**
+ * Create a fresh context with cleanup registry and abort controller.
+ * @returns {RouteContext}
+ */
+function createRouteContext() {
+  return {
+    abortController: new AbortController(),
+    cleanups: new Set(),
+  };
+}
 
-  function notFound() {
-    return simplePage('Pagina niet gevonden', '<p>Ga terug naar <a href="#/">Home</a>.</p>');
-  }
+/** @type {RouteContext} */
+let ctx = createRouteContext();
 
-  // Titels voor document.title (gebruikt door a11y-init voor aankondigingen)
-  function titleFor(route) {
-    switch (route) {
-      case 'home':      return t?.('router.home.title')       || 'Home';
-      case 'coins':     return t?.('router.coins.title')      || 'Munten';
-      case 'coinDetail':return t?.('router.coinDetail.title') || 'Munt';
-      case 'settings':  return t?.('router.settings.title')   || 'Instellingen';
-      case 'compare':   return t?.('router.compare.title')    || 'Vergelijken';
-      case 'portfolio': return t?.('router.portfolio.title')  || 'Portfolio';
-      case 'pro':       return t?.('router.pro.title')        || 'Pro';
-      default:          return 'Niet gevonden';
+/**
+ * Register a cleanup callback that runs on unmount.
+ * @param {() => void} fn
+ */
+export function onCleanup(fn) {
+  ctx.cleanups.add(fn);
+}
+
+/**
+ * Get an AbortSignal bound to the current route context.
+ * Use in fetch: fetch(url, { signal: getAbortSignal() })
+ * @returns {AbortSignal}
+ */
+export function getAbortSignal() {
+  return ctx.abortController.signal;
+}
+
+/**
+ * Unmount current route: abort pending requests and run cleanups.
+ */
+function unmountCurrent() {
+  try {
+    ctx.abortController.abort();
+  } catch (_) {}
+
+  for (const fn of ctx.cleanups) {
+    try {
+      fn();
+    } catch (e) {
+      console.warn('[router] cleanup error', e);
     }
   }
+  ctx.cleanups.clear();
+}
 
-  async function render() {
-    const { route, params } = parse(window.location.hash);
-    mount.innerHTML = '';
+/**
+ * Mount a route by name.
+ * Passes lifecycle helpers if the render function expects an options object.
+ * (Backwards compatible: renderX can ignore the argument.)
+ * @param {string} route
+ */
+function mount(route) {
+  const outlet = document.getElementById('app');
+  if (!outlet) return;
 
-    // Update document title (helpt a11y-init met nette “Navigatie: …”)
-    document.title = `RiskRadar — ${titleFor(route)}`;
+  // Fresh context for the new route
+  ctx = createRouteContext();
 
-    let view;
-    switch (route) {
-      case 'home':       view = renderHomePage(); break;
-      case 'coins':      view = renderCoinsPage(); break;
-      case 'coinDetail': view = renderCoinDetailPage(params); break;
-      case 'settings':   view = renderSettingsPage(); break;
-      case 'compare':    view = simplePage(t('router.compare.title'),   `<p class="rr-subtle">${t('router.compare.body')}</p>`); break;
-      case 'portfolio':  view = simplePage(t('router.portfolio.title'), `<p class="rr-subtle">${t('router.portfolio.body')}</p>`); break;
-      case 'pro':        view = simplePage(t('router.pro.title'),       `<p class="rr-subtle">${t('router.pro.body')}</p>`); break;
-      default:           view = notFound();
-    }
+  const opts = { onCleanup, getAbortSignal };
 
-    mount.appendChild(view);
-    window.scrollTo(0, 0);
+  switch (route) {
+    case 'home':
+      renderHome?.length ? renderHome(opts) : renderHome();
+      break;
+    case 'coins':
+      renderCoins?.length ? renderCoins(opts) : renderCoins();
+      break;
+    case 'settings':
+      renderSettings?.length ? renderSettings(opts) : renderSettings();
+      break;
+    default:
+      renderHome?.length ? renderHome(opts) : renderHome();
+      break;
   }
+}
 
-  window.addEventListener('hashchange', render);
-  window.addEventListener('load', render);
-  render();
+/**
+ * Simple hash-based router.
+ */
+function handleRouteChange() {
+  unmountCurrent();
+  const hash = (location.hash || '#/').slice(1);
+  const path = hash.replace(/^\//, '');
+  mount(path || 'home');
+}
+
+/**
+ * Initialize router (call once).
+ */
+export function initRouter() {
+  // Listen to hash changes
+  window.addEventListener('hashchange', handleRouteChange);
+  onCleanup(() => window.removeEventListener('hashchange', handleRouteChange));
+
+  // Re-render current route on locale change (keeps pages simple)
+  const onLocale = () => handleRouteChange();
+  window.addEventListener('localechange', onLocale);
+  onCleanup(() => window.removeEventListener('localechange', onLocale));
+
+  // Initial route
+  handleRouteChange();
 }
