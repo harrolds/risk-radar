@@ -17,10 +17,7 @@ function createRouteContext() {
 /** @type {RouteContext} */
 let ctx = createRouteContext();
 
-/**
- * Registreer cleanup-callbacks (wordt bij navigatie uitgevoerd)
- * @param {() => void} fn
- */
+/** Registreer cleanup-callbacks (wordt bij navigatie uitgevoerd) */
 export function onCleanup(fn) {
   ctx.cleanups.add(fn);
 }
@@ -53,7 +50,7 @@ function mount(route) {
   // Leeg de outlet vooraf (voorkomt “rommel”)
   outlet.innerHTML = '';
 
-  // Options ALTIJD doorgeven (geen arity-check meer)
+  // Opties ALTIJD doorgeven (geen arity-check)
   const opts = { onCleanup, getAbortSignal };
 
   switch (route) {
@@ -67,16 +64,18 @@ function mount(route) {
     case 'settings':
       renderSettings(opts);
       break;
-    // Toekomstige placeholders (Compare/Portfolio/Pro)
+
+    // Placeholder routes (optioneel)
     case 'compare':
-      outlet.innerHTML = `<section class="page"><h1>Vergelijk</h1><p>Deze pagina komt later beschikbaar.</p></section>`;
+      outlet.innerHTML = `<div class="rr-container"><section class="page"><h1>Vergelijk</h1><p>Deze pagina komt later beschikbaar.</p></section></div>`;
       break;
     case 'portfolio':
-      outlet.innerHTML = `<section class="page"><h1>Portfolio</h1><p>Deze pagina komt later beschikbaar.</p></section>`;
+      outlet.innerHTML = `<div class="rr-container"><section class="page"><h1>Portfolio</h1><p>Deze pagina komt later beschikbaar.</p></section></div>`;
       break;
     case 'pro':
-      outlet.innerHTML = `<section class="page"><h1>RiskRadar Pro</h1><p>Upgrade-flow volgt in Fase 7.</p></section>`;
+      outlet.innerHTML = `<div class="rr-container"><section class="page"><h1>RiskRadar Pro</h1><p>Upgrade-flow volgt in Fase 7.</p></section></div>`;
       break;
+
     default:
       renderHome(opts);
       break;
@@ -97,7 +96,7 @@ export function initRouter() {
   window.addEventListener('hashchange', handleRouteChange);
   onCleanup(() => window.removeEventListener('hashchange', handleRouteChange));
 
-  // Re-render bij taalwissel (optioneel, houdt pages simpel)
+  // Re-render bij taalwissel (houdt pages simpel)
   const onLocale = () => handleRouteChange();
   window.addEventListener('localechange', onLocale);
   onCleanup(() => window.removeEventListener('localechange', onLocale));
